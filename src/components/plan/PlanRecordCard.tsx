@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { hasValidApplication } from '../../lib/apps'
 import type { PlanItem } from '../../types'
 
@@ -17,6 +17,16 @@ const PlanRecordCard = ({ item, onEdit, onDelete, onDuplicate }: Props) => {
     label: item.label || '',
     notes: item.notes || '',
   })
+
+  // Sync editData with item when item changes
+  useEffect(() => {
+    setEditData({
+      title: item.title,
+      application: item.application || '',
+      label: item.label || '',
+      notes: item.notes || '',
+    })
+  }, [item.id, item.title, item.application, item.label, item.notes])
 
   const handleFieldChange = (field: keyof typeof editData, value: string) => {
     setEditData(prev => ({ ...prev, [field]: value }))
