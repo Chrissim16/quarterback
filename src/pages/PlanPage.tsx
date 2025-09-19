@@ -16,6 +16,16 @@ const PlanPage = ({ className = '' }: PageProps) => {
   const [bulkImportText, setBulkImportText] = useState('')
   const [showBulkImportDialog, setShowBulkImportDialog] = useState(false)
   const [showJiraSync, setShowJiraSync] = useState(false)
+  const [showAddItemForm, setShowAddItemForm] = useState(false)
+  const [newItem, setNewItem] = useState({
+    title: '',
+    type: 'Feature' as 'Feature' | 'Story',
+    application: '',
+    label: '',
+    notes: '',
+    baseDays: 1,
+    certainty: 'Mid' as 'Low' | 'Mid' | 'High',
+  })
 
   // Grid state
   const [query, setQuery] = useState('')
@@ -119,9 +129,41 @@ const PlanPage = ({ className = '' }: PageProps) => {
   }, [items, query, filter, sort])
 
   const handleAddItem = () => {
-    addPlanItem({
-      type: 'Feature',
+    setShowAddItemForm(true)
+    setNewItem({
       title: '',
+      type: 'Feature',
+      application: '',
+      label: '',
+      notes: '',
+      baseDays: 1,
+      certainty: 'Mid',
+    })
+  }
+
+  const handleSaveNewItem = () => {
+    if (newItem.title.trim()) {
+      addPlanItem({
+        title: newItem.title.trim(),
+        type: newItem.type,
+        application: newItem.application || undefined,
+        label: newItem.label || undefined,
+        notes: newItem.notes || undefined,
+        baseDays: newItem.baseDays,
+        certainty: newItem.certainty,
+      })
+      setShowAddItemForm(false)
+    }
+  }
+
+  const handleCancelNewItem = () => {
+    setShowAddItemForm(false)
+    setNewItem({
+      title: '',
+      type: 'Feature',
+      application: '',
+      label: '',
+      notes: '',
       baseDays: 1,
       certainty: 'Mid',
     })
@@ -332,6 +374,105 @@ const PlanPage = ({ className = '' }: PageProps) => {
             onSort={setSort}
             onAddItem={handleAddItem}
           />
+
+          {/* Add Item Form */}
+          {showAddItemForm && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Plan Item</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                  <input
+                    type="text"
+                    value={newItem.title}
+                    onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                    placeholder="Enter item title..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <select
+                    value={newItem.type}
+                    onChange={(e) => setNewItem({ ...newItem, type: e.target.value as 'Feature' | 'Story' })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Feature">Feature</option>
+                    <option value="Story">Story</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Application</label>
+                  <input
+                    type="text"
+                    value={newItem.application}
+                    onChange={(e) => setNewItem({ ...newItem, application: e.target.value })}
+                    placeholder="e.g., Web App, Mobile"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
+                  <input
+                    type="text"
+                    value={newItem.label}
+                    onChange={(e) => setNewItem({ ...newItem, label: e.target.value })}
+                    placeholder="e.g., epic-1, sprint-1"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    value={newItem.notes}
+                    onChange={(e) => setNewItem({ ...newItem, notes: e.target.value })}
+                    placeholder="Additional details..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Base Days</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={newItem.baseDays}
+                    onChange={(e) => setNewItem({ ...newItem, baseDays: Math.max(0, parseFloat(e.target.value) || 1) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Certainty</label>
+                  <select
+                    value={newItem.certainty}
+                    onChange={(e) => setNewItem({ ...newItem, certainty: e.target.value as 'Low' | 'Mid' | 'High' })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="High">High</option>
+                    <option value="Mid">Mid</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={handleCancelNewItem}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveNewItem}
+                  disabled={!newItem.title.trim()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  Add Item
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Grid */}
           <PlanRecordGrid
