@@ -3,7 +3,8 @@ import { useAppStore } from '../store/useAppStore'
 import type { Holiday, ISO2 } from '../types'
 
 const HolidaysPage = () => {
-  const { holidays, getCurrentQuarter, settings, addHoliday, updateHoliday, removeHoliday } = useAppStore()
+  const { getCurrentQuarterHolidays, getCurrentQuarter, settings, addHoliday, updateHoliday, removeHoliday } = useAppStore()
+  const holidays = getCurrentQuarterHolidays()
   const quarter = getCurrentQuarter()
   const [isAddingHoliday, setIsAddingHoliday] = useState(false)
   const [newHoliday, setNewHoliday] = useState<Partial<Holiday>>({

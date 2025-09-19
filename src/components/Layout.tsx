@@ -7,10 +7,11 @@ import type { LayoutProps, Selection } from '../types'
 type SettingsSection = 'general' | 'quarters' | 'countries' | 'holidays' | 'jira'
 
 const Layout = ({ children }: LayoutProps) => {
-  const { selection, setSelection, getCurrentQuarter } = useAppStore()
+  const { selection, setSelection, getCurrentQuarter, quarters, setCurrentQuarter } = useAppStore()
   const currentQuarter = getCurrentQuarter()
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false)
   const [activeSettingsSection, setActiveSettingsSection] = useState<SettingsSection>('general')
+  const [showQuarterSwitcher, setShowQuarterSwitcher] = useState(false)
 
   const navigationItems: { key: Selection; label: string; hasSubpages?: boolean }[] = [
     { key: 'plan', label: 'Plan' },
@@ -48,6 +49,21 @@ const Layout = ({ children }: LayoutProps) => {
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
+  // Handle click outside to close quarter switcher
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showQuarterSwitcher) {
+        const target = event.target as Element
+        if (!target.closest('[data-quarter-switcher]')) {
+          setShowQuarterSwitcher(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showQuarterSwitcher])
+
   const handleNavigation = (key: Selection) => {
     setSelection(key)
     window.location.hash = key
@@ -68,23 +84,70 @@ const Layout = ({ children }: LayoutProps) => {
     window.location.hash = `#settings-${section}`
   }
 
+  const handleQuarterSwitch = (quarterId: string) => {
+    setCurrentQuarter(quarterId)
+    setShowQuarterSwitcher(false)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Bar */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Quarterback</h1>
-          <div className="text-sm text-gray-500">
-            {currentQuarter ? (
-              <>
-                <div>{currentQuarter.name}</div>
-                <div className="text-xs text-gray-400">
-                  {formatDateRange(currentQuarter.startISO, currentQuarter.endISO)} • {workingDaysBetween(currentQuarter.startISO, currentQuarter.endISO)} working days
+          <div className="flex items-center space-x-4">
+            {/* Quarter Switcher */}
+            <div className="relative" data-quarter-switcher>
+              <button
+                onClick={() => setShowQuarterSwitcher(!showQuarterSwitcher)}
+                className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+              >
+                <span className="font-medium">
+                  {currentQuarter ? currentQuarter.name : 'Select Quarter'}
+                </span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {showQuarterSwitcher && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="p-2">
+                    <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-1">Switch Quarter</div>
+                    {quarters.map((quarter) => (
+                      <button
+                        key={quarter.id}
+                        onClick={() => handleQuarterSwitch(quarter.id)}
+                        className={`w-full text-left px-2 py-2 text-sm rounded hover:bg-gray-50 transition-colors ${
+                          quarter.id === currentQuarter?.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                        }`}
+                      >
+                        <div className="font-medium">{quarter.name}</div>
+                        <div className="text-xs text-gray-500">
+                          {formatDateRange(quarter.startISO, quarter.endISO)} • {workingDaysBetween(quarter.startISO, quarter.endISO)} days
+                        </div>
+                        {quarter.label && (
+                          <div className="text-xs text-blue-600 mt-1">Label: {quarter.label}</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div>No quarter selected</div>
-            )}
+              )}
+            </div>
+            
+            {/* Quarter Info */}
+            <div className="text-sm text-gray-500">
+              {currentQuarter ? (
+                <>
+                  <div className="text-xs text-gray-400">
+                    {formatDateRange(currentQuarter.startISO, currentQuarter.endISO)} • {workingDaysBetween(currentQuarter.startISO, currentQuarter.endISO)} working days
+                  </div>
+                </>
+              ) : (
+                <div>No quarter selected</div>
+              )}
+            </div>
           </div>
         </div>
       </div>

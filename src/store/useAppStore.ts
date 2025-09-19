@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { save, load } from '../lib/persist'
 import { DEFAULT_COUNTRIES } from '../lib/countries'
+import { migrateToQuarterCentric, needsMigration, createBackup } from '../lib/migration'
 import {
   calculateAdjustedDays,
   getCurrentQuarter,
@@ -387,10 +388,33 @@ export const useAppStore = create<AppState & AppActions>()(
 // Persistence middleware
 const STORAGE_KEY = 'quarterback-app-state'
 
-// Load initial state from localStorage
+// Load initial state from localStorage and migrate if needed
 const savedState = load<AppState>(STORAGE_KEY, initialState)
 if (savedState) {
-  useAppStore.setState(savedState)
+  // Check if migration is needed
+  if (needsMigration(savedState)) {
+    console.log('Data migration needed, running migration...')
+    
+    // Create backup before migration
+    const backup = createBackup(savedState)
+    localStorage.setItem(`${STORAGE_KEY}-backup-${Date.now()}`, backup)
+    console.log('Backup created before migration')
+    
+    // Run migration
+    const migrationResult = migrateToQuarterCentric(savedState)
+    if (migrationResult.success) {
+      console.log('Migration completed successfully:', migrationResult)
+      useAppStore.setState(savedState)
+      // Set flag to show migration notification
+      localStorage.setItem('quarterback-migration-completed', 'true')
+    } else {
+      console.error('Migration failed:', migrationResult.errors)
+      // Use initial state if migration fails
+      useAppStore.setState(initialState)
+    }
+  } else {
+    useAppStore.setState(savedState)
+  }
 }
 
 // Subscribe to state changes and save to localStorage

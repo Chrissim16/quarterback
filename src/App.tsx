@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Layout from './components/Layout'
 import QuarterSelector from './components/QuarterSelector'
+import MigrationNotification from './components/MigrationNotification'
 import PlanPage from './pages/PlanPage'
 import TeamPage from './pages/TeamPage'
 import HolidaysPage from './pages/HolidaysPage'
@@ -10,10 +11,17 @@ import { getMainPageFromHash } from './utils/routing'
 import type { Selection } from './types'
 
 function App() {
+  const [showMigrationNotification, setShowMigrationNotification] = useState(true)
+
   return (
-    <Layout>
-      <AppContent />
-    </Layout>
+    <>
+      <Layout>
+        <AppContent />
+      </Layout>
+      {showMigrationNotification && (
+        <MigrationNotification onDismiss={() => setShowMigrationNotification(false)} />
+      )}
+    </>
   )
 }
 

@@ -8,7 +8,8 @@ import { hasValidApplication } from '../lib/apps'
 import type { TeamMember, ISO2 } from '../types'
 
 const TeamPage = () => {
-  const { team, settings, addTeamMember, updateTeamMember, removeTeamMember } = useAppStore()
+  const { getCurrentQuarterTeam, settings, addTeamMember, updateTeamMember, removeTeamMember } = useAppStore()
+  const team = getCurrentQuarterTeam()
   const capacity = useCapacity()
   const assignmentOverview = useAssignmentOverview()
   const isProposalStale = useProposalStaleness()

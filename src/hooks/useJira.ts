@@ -5,7 +5,7 @@ import type { JiraConfig, JiraIssue } from '../lib/jira'
 import type { PlanItem } from '../types'
 
 export const useJira = () => {
-  const { settings, items, addPlanItem, updatePlanItem } = useAppStore()
+  const { settings, items, addPlanItem, updatePlanItem, getCurrentQuarter } = useAppStore()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [client, setClient] = useState<JiraClient | null>(null)
@@ -62,7 +62,11 @@ export const useJira = () => {
     setError(null)
 
     try {
-      const query = jql || buildJQLForProject(settings.jira.projectKey)
+      // Get current quarter label for default JQL
+      const currentQuarter = getCurrentQuarter()
+      const quarterLabel = currentQuarter?.label
+      
+      const query = jql || buildJQLForProject(settings.jira.projectKey, undefined, quarterLabel)
       const result = await client.searchIssues(query, 0, 100)
       
       // Convert Jira issues to plan items
@@ -74,7 +78,7 @@ export const useJira = () => {
         
         if (existingItem) {
           // Update existing item with latest Jira data
-          const updatedItem = jiraIssueToPlanItem(issue)
+          const updatedItem = jiraIssueToPlanItem(issue, currentQuarter?.id)
           updatePlanItem({
             id: existingItem.id,
             ...updatedItem,
@@ -85,7 +89,7 @@ export const useJira = () => {
           })
         } else {
           // Create new item
-          const newItem = jiraIssueToPlanItem(issue)
+          const newItem = jiraIssueToPlanItem(issue, currentQuarter?.id)
           addPlanItem(newItem)
           newItems.push(newItem)
         }
@@ -111,7 +115,7 @@ export const useJira = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [client, settings.jira, items, addPlanItem, updatePlanItem])
+  }, [client, settings.jira, items, addPlanItem, updatePlanItem, getCurrentQuarter])
 
   const syncToJira = useCallback(async (planItems?: PlanItem[]) => {
     if (!client || !settings.jira) {

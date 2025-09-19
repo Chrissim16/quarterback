@@ -200,7 +200,7 @@ export class JiraClient {
 }
 
 // Utility functions for converting between Jira and Quarterback data
-export function jiraIssueToPlanItem(issue: JiraIssue): PlanItem {
+export function jiraIssueToPlanItem(issue: JiraIssue, quarterId?: string): PlanItem {
   return {
     id: `jira-${issue.id}`,
     key: issue.key,
@@ -220,6 +220,7 @@ export function jiraIssueToPlanItem(issue: JiraIssue): PlanItem {
     jiraSprint: issue.customfield_10020,
     jiraCreated: issue.created,
     jiraUpdated: issue.updated,
+    quarterId: quarterId || '', // Will be set by the store if not provided
   }
 }
 
@@ -242,8 +243,13 @@ function mapJiraIssueType(jiraType: string): 'Feature' | 'Story' {
 }
 
 // JQL query builders
-export function buildJQLForProject(projectKey: string, additionalFilters?: string): string {
+export function buildJQLForProject(projectKey: string, additionalFilters?: string, quarterLabel?: string): string {
   let jql = `project = "${projectKey}"`
+  
+  // Add quarter label filter if provided
+  if (quarterLabel) {
+    jql += ` AND labels = "${quarterLabel}"`
+  }
   
   if (additionalFilters) {
     jql += ` AND ${additionalFilters}`

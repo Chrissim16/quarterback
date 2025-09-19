@@ -8,7 +8,9 @@ interface Props {
 
 const JiraSync = ({ onSyncComplete }: Props) => {
   const { syncFromJira, syncToJira, isLoading, error, isConnected, getJiraStatus } = useJira()
-  const { items } = useAppStore()
+  const { getCurrentQuarterItems, getCurrentQuarter } = useAppStore()
+  const items = getCurrentQuarterItems()
+  const currentQuarter = getCurrentQuarter()
   const [customJQL, setCustomJQL] = useState('')
   const [useCustomJQL, setUseCustomJQL] = useState(false)
 
@@ -64,6 +66,20 @@ const JiraSync = ({ onSyncComplete }: Props) => {
         {/* Sync From Jira */}
         <div className="p-4 border border-gray-200 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-3">Sync From Jira</h3>
+          
+          {currentQuarter?.label ? (
+            <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+              <strong>Quarter Label:</strong> {currentQuarter.label}
+              <br />
+              <span className="text-blue-600">Issues with this label will be imported by default</span>
+            </div>
+          ) : (
+            <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+              <strong>No Quarter Label Set</strong>
+              <br />
+              <span className="text-yellow-600">All project issues will be imported. Set a quarter label to filter by quarter.</span>
+            </div>
+          )}
           
           <div className="space-y-3">
             <div className="flex items-center space-x-2">

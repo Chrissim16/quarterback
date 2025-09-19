@@ -9,7 +9,8 @@ import PlanRecordGrid from '../components/plan/PlanRecordGrid'
 import type { PageProps, PlanItem } from '../types'
 
 const PlanPage = ({ className = '' }: PageProps) => {
-  const { items, addPlanItem, updatePlanItem, removePlanItem } = useAppStore()
+  const { getCurrentQuarterItems, addPlanItem, updatePlanItem, removePlanItem } = useAppStore()
+  const items = getCurrentQuarterItems()
   const planSummary = usePlanSummary()
   const proposal = useProposal()
   const [bulkImportText, setBulkImportText] = useState('')
