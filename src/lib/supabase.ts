@@ -5,10 +5,8 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Create Supabase client if credentials are available
-export const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient<Database>(supabaseUrl, supabaseAnonKey)
-  : null
+// Temporarily disabled to prevent app crashes
+export const supabase = null
 
 // Database table names
 export const TABLES = {

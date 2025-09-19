@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { workingDaysBetween, validateDateRange } from '../../lib/dates'
 import { downloadData, uploadData } from '../../lib/export'
-import SupabaseConfig from '../supabase/SupabaseConfig'
+// import SupabaseConfig from '../supabase/SupabaseConfig' // Temporarily disabled
 
 const GeneralSettings = () => {
   const { settings, updateSettings, getCurrentQuarter, items, team, holidays, quarters } = useAppStore()
@@ -77,10 +77,10 @@ const GeneralSettings = () => {
         <p className="text-gray-600 mt-1">Configure basic application settings and multipliers.</p>
       </div>
 
-            {/* Supabase Database Setup */}
-            <SupabaseConfig onConfigured={(email) => {
+            {/* Supabase Database Setup - Temporarily disabled */}
+            {/* <SupabaseConfig onConfigured={(email) => {
               console.log('Supabase configured for:', email)
-            }} />
+            }} /> */}
 
       {/* Certainty Multipliers */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
