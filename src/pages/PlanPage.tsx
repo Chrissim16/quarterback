@@ -19,6 +19,7 @@ const PlanPage = ({ className = '' }: PageProps) => {
   const [showAddItemForm, setShowAddItemForm] = useState(false)
   const [newItem, setNewItem] = useState({
     title: '',
+    key: '',
     type: 'Feature' as 'Feature' | 'Story',
     application: '',
     label: '',
@@ -132,6 +133,7 @@ const PlanPage = ({ className = '' }: PageProps) => {
     setShowAddItemForm(true)
     setNewItem({
       title: '',
+      key: '',
       type: 'Feature',
       application: '',
       label: '',
@@ -145,6 +147,7 @@ const PlanPage = ({ className = '' }: PageProps) => {
     if (newItem.title.trim()) {
       addPlanItem({
         title: newItem.title.trim(),
+        key: newItem.key || undefined,
         type: newItem.type,
         application: newItem.application || undefined,
         label: newItem.label || undefined,
@@ -160,6 +163,7 @@ const PlanPage = ({ className = '' }: PageProps) => {
     setShowAddItemForm(false)
     setNewItem({
       title: '',
+      key: '',
       type: 'Feature',
       application: '',
       label: '',
@@ -389,6 +393,16 @@ const PlanPage = ({ className = '' }: PageProps) => {
                     placeholder="Enter item title..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Jira Key</label>
+                  <input
+                    type="text"
+                    value={newItem.key}
+                    onChange={(e) => setNewItem({ ...newItem, key: e.target.value })}
+                    placeholder="e.g., PROJ-123"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
