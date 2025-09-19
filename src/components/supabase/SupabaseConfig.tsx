@@ -128,3 +128,4 @@ const SupabaseConfig: React.FC<SupabaseConfigProps> = ({ onConfigured }) => {
 
 export default SupabaseConfig
 
+

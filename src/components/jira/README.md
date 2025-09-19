@@ -82,3 +82,4 @@ The integration assumes these Jira custom fields:
 Adjust field IDs in `src/lib/jira.ts` if your Jira instance uses different custom field IDs.
 
 
+

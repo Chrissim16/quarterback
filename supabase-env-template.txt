@@ -7,3 +7,4 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 # Optional: Service Role Key (for admin operations)
 # VITE_SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
+

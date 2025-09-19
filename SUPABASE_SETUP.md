@@ -142,3 +142,4 @@ Once set up, your Quarterback data will:
 
 **Need help?** Check the [Supabase Documentation](https://supabase.com/docs) or create an issue in the project repository.
 
+
