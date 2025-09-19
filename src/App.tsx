@@ -18,22 +18,29 @@ function App() {
 }
 
 function AppContent() {
-  const { selection, setSelection } = useAppStore()
+  const { selection, setSelection, currentQuarterId } = useAppStore()
 
   useEffect(() => {
-    // Get initial page from hash
-    const mainPage = getMainPageFromHash(window.location.hash)
-    setSelection(mainPage)
-
-    // Listen for hash changes
-    const handleHashChange = () => {
+    if (currentQuarterId) {
+      // Get initial page from hash
       const mainPage = getMainPageFromHash(window.location.hash)
       setSelection(mainPage)
-    }
 
-    window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [setSelection])
+      // Listen for hash changes
+      const handleHashChange = () => {
+        const mainPage = getMainPageFromHash(window.location.hash)
+        setSelection(mainPage)
+      }
+
+      window.addEventListener('hashchange', handleHashChange)
+      return () => window.removeEventListener('hashchange', handleHashChange)
+    }
+  }, [setSelection, currentQuarterId])
+
+  if (!currentQuarterId) {
+    console.log('Showing quarter selector - currentQuarterId:', currentQuarterId)
+    return <QuarterSelector onQuarterSelected={() => {}} />
+  }
 
   const renderPage = () => {
     switch (selection) {

@@ -28,7 +28,7 @@ const initialQuarter: QuarterWithId = {
 
 const initialState: AppState = {
   quarters: [initialQuarter],
-  currentQuarterId: initialQuarter.id, // Start with a quarter selected for now
+  currentQuarterId: null, // No quarter selected initially - show quarter selector
   team: [],
   holidays: [],
   items: [],

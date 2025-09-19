@@ -1,0 +1,9 @@
+@echo off
+echo Adding files to git...
+git add .
+echo Committing changes...
+git commit -m "Fix quarter selector - set currentQuarterId to null and add quarter logic to App.tsx"
+echo Pushing to GitHub...
+git push origin master
+echo Done!
+pause
