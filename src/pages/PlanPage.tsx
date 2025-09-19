@@ -170,7 +170,8 @@ const PlanPage = ({ className = '' }: PageProps) => {
   }
 
   const handleEditItem = (partial: Partial<PlanItem> & { id: string }) => {
-    updatePlanItem(partial.id, partial)
+    const { id, ...updates } = partial
+    updatePlanItem(id, updates)
   }
 
   return (
