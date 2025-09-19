@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useRef } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { workingDaysBetween, validateDateRange } from '../../lib/dates'
 import { downloadData, uploadData } from '../../lib/export'
 import { migrateLocalStorageToSupabase, hasCompletedMigration, getMigrationDate } from '../../lib/migrateToSupabase'
+import { DataRecoveryService } from '../../lib/dataRecovery'
 import SupabaseConfig from '../supabase/SupabaseConfig'
 
 const GeneralSettings = () => {
@@ -14,7 +15,15 @@ const GeneralSettings = () => {
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' })
   const [migrationStatus, setMigrationStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' })
   const [isMigrating, setIsMigrating] = useState(false)
+  const [recoveryStatus, setRecoveryStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' })
+  const [isRecovering, setIsRecovering] = useState(false)
+  const [availableBackups, setAvailableBackups] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Load available backups on mount
+  useEffect(() => {
+    setAvailableBackups(DataRecoveryService.listBackups())
+  }, [])
 
   // Calculate working days in quarter
   const workingDays = useMemo(() => {
@@ -92,6 +101,65 @@ const GeneralSettings = () => {
     } finally {
       setIsMigrating(false)
     }
+  }
+
+  const handleRecoverFromSupabase = async () => {
+    setIsRecovering(true)
+    setRecoveryStatus({ type: null, message: '' })
+    
+    try {
+      const success = await DataRecoveryService.restoreFromSupabase()
+      if (success) {
+        setRecoveryStatus({ 
+          type: 'success', 
+          message: 'Data successfully restored from Supabase! Please refresh the page.' 
+        })
+        // Refresh the page to reload the store
+        setTimeout(() => window.location.reload(), 2000)
+      } else {
+        setRecoveryStatus({ 
+          type: 'error', 
+          message: 'Failed to restore data from Supabase. Please check your connection.' 
+        })
+      }
+      setTimeout(() => setRecoveryStatus({ type: null, message: '' }), 5000)
+    } catch (error) {
+      setRecoveryStatus({ 
+        type: 'error', 
+        message: `Recovery failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      })
+      setTimeout(() => setRecoveryStatus({ type: null, message: '' }), 5000)
+    } finally {
+      setIsRecovering(false)
+    }
+  }
+
+  const handleRestoreFromBackup = (backupKey: string) => {
+    const success = DataRecoveryService.restoreFromBackup(backupKey)
+    if (success) {
+      setRecoveryStatus({ 
+        type: 'success', 
+        message: 'Data restored from backup! Please refresh the page.' 
+      })
+      // Refresh the page to reload the store
+      setTimeout(() => window.location.reload(), 2000)
+    } else {
+      setRecoveryStatus({ 
+        type: 'error', 
+        message: 'Failed to restore from backup.' 
+      })
+    }
+    setTimeout(() => setRecoveryStatus({ type: null, message: '' }), 5000)
+  }
+
+  const handleCreateBackup = () => {
+    const backupKey = DataRecoveryService.createBackup()
+    setAvailableBackups(DataRecoveryService.listBackups())
+    setRecoveryStatus({ 
+      type: 'success', 
+      message: `Backup created: ${backupKey}` 
+    })
+    setTimeout(() => setRecoveryStatus({ type: null, message: '' }), 3000)
   }
 
   return (
@@ -244,6 +312,16 @@ const GeneralSettings = () => {
           </div>
         )}
 
+        {recoveryStatus.type && (
+          <div className={`mb-4 p-3 rounded-lg ${
+            recoveryStatus.type === 'success' 
+              ? 'bg-green-50 border border-green-200 text-green-800' 
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}>
+            {recoveryStatus.message}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Export */}
           <div className="flex-1">
@@ -310,6 +388,70 @@ const GeneralSettings = () => {
             >
               {isMigrating ? 'Migrating...' : hasCompletedMigration() ? 'Already Migrated' : '🚀 Migrate to Supabase'}
             </button>
+          </div>
+        </div>
+
+        {/* Data Recovery */}
+        <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+          <h4 className="text-sm font-medium text-orange-900 mb-2">Data Recovery</h4>
+          <p className="text-xs text-orange-700 mb-3">
+            If you've lost data, you can restore it from Supabase or from a local backup.
+          </p>
+          
+          <div className="space-y-3">
+            {/* Restore from Supabase */}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-orange-800">Restore from Supabase</div>
+                <div className="text-xs text-orange-600">Download all data from your Supabase database</div>
+              </div>
+              <button
+                onClick={handleRecoverFromSupabase}
+                disabled={isRecovering}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors"
+              >
+                {isRecovering ? 'Restoring...' : '🔄 Restore from Supabase'}
+              </button>
+            </div>
+
+            {/* Create Backup */}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-orange-800">Create Local Backup</div>
+                <div className="text-xs text-orange-600">Save current data as a local backup</div>
+              </div>
+              <button
+                onClick={handleCreateBackup}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              >
+                💾 Create Backup
+              </button>
+            </div>
+
+            {/* Restore from Backup */}
+            {availableBackups.length > 0 && (
+              <div>
+                <div className="text-sm font-medium text-orange-800 mb-2">Restore from Local Backup</div>
+                <div className="space-y-1">
+                  {availableBackups.slice(0, 5).map((backupKey) => (
+                    <div key={backupKey} className="flex items-center justify-between text-xs">
+                      <span className="text-orange-600 font-mono">{backupKey}</span>
+                      <button
+                        onClick={() => handleRestoreFromBackup(backupKey)}
+                        className="px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                      >
+                        Restore
+                      </button>
+                    </div>
+                  ))}
+                  {availableBackups.length > 5 && (
+                    <div className="text-xs text-orange-500">
+                      ... and {availableBackups.length - 5} more backups
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
