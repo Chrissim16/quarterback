@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { save, load } from '../lib/persist'
+import { supabaseSync } from '../lib/supabaseSync'
 import { DEFAULT_COUNTRIES } from '../lib/countries'
 import { migrateToQuarterCentric, needsMigration, createBackup } from '../lib/migration'
 import {
@@ -114,6 +115,9 @@ export const useAppStore = create<AppState & AppActions>()(
       set(state => ({
         quarters: [...state.quarters, newQuarter],
       }))
+      
+      // Sync to Supabase
+      supabaseSync.syncQuarter(newQuarter)
     },
 
     updateQuarter: (id: string, updates: Partial<QuarterWithId>) => {
@@ -248,6 +252,9 @@ export const useAppStore = create<AppState & AppActions>()(
       set(state => ({
         items: [...state.items, newItem],
       }))
+      
+      // Sync to Supabase
+      supabaseSync.syncPlanItem(newItem)
     },
 
     updatePlanItem: (id: string, updates: Partial<PlanItem>) => {
