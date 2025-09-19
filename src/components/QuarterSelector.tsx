@@ -23,7 +23,7 @@ const QuarterSelector: React.FC<QuarterSelectorProps> = ({ onQuarterSelected }) 
     onQuarterSelected()
   }
 
-  const handleCreateQuarter = () => {
+  const handleCreateQuarter = async () => {
     if (!newQuarter.name || !newQuarter.startISO || !newQuarter.endISO) {
       alert('Please fill in all required fields')
       return
@@ -35,9 +35,13 @@ const QuarterSelector: React.FC<QuarterSelectorProps> = ({ onQuarterSelected }) 
       return
     }
 
-    addQuarter(newQuarter)
-    setShowCreateForm(false)
-    setNewQuarter({ name: '', description: '', startISO: '', endISO: '', label: '' })
+    const success = await addQuarter(newQuarter)
+    if (success) {
+      setShowCreateForm(false)
+      setNewQuarter({ name: '', description: '', startISO: '', endISO: '', label: '' })
+    } else {
+      alert('Failed to create quarter. Please try again.')
+    }
   }
 
   const workingDays = newQuarter.startISO && newQuarter.endISO 

@@ -143,9 +143,9 @@ const PlanPage = ({ className = '' }: PageProps) => {
     })
   }
 
-  const handleSaveNewItem = () => {
+  const handleSaveNewItem = async () => {
     if (newItem.title.trim()) {
-      addPlanItem({
+      const success = await addPlanItem({
         title: newItem.title.trim(),
         key: newItem.key || undefined,
         type: newItem.type,
@@ -155,7 +155,12 @@ const PlanPage = ({ className = '' }: PageProps) => {
         baseDays: newItem.baseDays,
         certainty: newItem.certainty,
       })
-      setShowAddItemForm(false)
+      
+      if (success) {
+        setShowAddItemForm(false)
+      } else {
+        alert('Failed to add plan item. Please try again.')
+      }
     }
   }
 
@@ -173,17 +178,18 @@ const PlanPage = ({ className = '' }: PageProps) => {
     })
   }
 
-  const handleBulkImport = () => {
+  const handleBulkImport = async () => {
     const lines = bulkImportText
       .split('\n')
       .map(line => line.trim())
       .filter(line => line.length > 0)
 
-    lines.forEach(line => {
+    let successCount = 0
+    for (const line of lines) {
       const parts = line.split(',').map(part => part.trim())
       if (parts.length >= 3) {
         const [key, title, type, label, application] = parts
-        addPlanItem({
+        const success = await addPlanItem({
           ...(key && { key }),
           title: title || '',
           type: (type as 'Feature' | 'Story') || 'Feature',
@@ -192,10 +198,12 @@ const PlanPage = ({ className = '' }: PageProps) => {
           baseDays: 1,
           certainty: 'Mid',
         })
+        if (success) successCount++
       }
-    })
+    }
 
     setBulkImportText('')
+    alert(`Bulk import completed: ${successCount}/${lines.length} items added successfully`)
   }
 
   const handleGenerateProposals = async () => {
@@ -204,20 +212,26 @@ const PlanPage = ({ className = '' }: PageProps) => {
     alert('Proposal updated! Check the Team page to see assignments.')
   }
 
-  const handleDuplicateItem = (id: string) => {
+  const handleDuplicateItem = async (id: string) => {
     const item = items.find(i => i.id === id)
     if (item) {
-      addPlanItem({
+      const success = await addPlanItem({
         ...item,
         title: `${item.title} (Copy)`,
         key: item.key ? `${item.key}-copy` : undefined,
       })
+      if (!success) {
+        alert('Failed to duplicate item. Please try again.')
+      }
     }
   }
 
-  const handleEditItem = (partial: Partial<PlanItem> & { id: string }) => {
+  const handleEditItem = async (partial: Partial<PlanItem> & { id: string }) => {
     const { id, ...updates } = partial
-    updatePlanItem(id, updates)
+    const success = await updatePlanItem(id, updates)
+    if (!success) {
+      alert('Failed to update plan item. Please try again.')
+    }
   }
 
   return (

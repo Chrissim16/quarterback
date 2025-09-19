@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { save, load } from '../lib/persist'
-import { supabaseSync } from '../lib/supabaseSync'
+import { supabaseDataService } from '../lib/supabaseDataService'
 import { DEFAULT_COUNTRIES } from '../lib/countries'
 import { migrateToQuarterCentric, needsMigration, createBackup } from '../lib/migration'
 import {
@@ -51,31 +51,31 @@ interface AppActions {
   // Selection actions
   setSelection: (selection: Selection) => void
 
-  // Quarter actions
-  addQuarter: (quarter: Omit<QuarterWithId, 'id'>) => void
-  updateQuarter: (id: string, updates: Partial<QuarterWithId>) => void
-  removeQuarter: (id: string) => void
-  setCurrentQuarter: (id: string) => void
-  getCurrentQuarter: () => QuarterWithId | undefined
+    // Quarter actions
+    addQuarter: (quarter: Omit<QuarterWithId, 'id'>) => Promise<boolean>
+    updateQuarter: (id: string, updates: Partial<QuarterWithId>) => Promise<boolean>
+    removeQuarter: (id: string) => Promise<boolean>
+    setCurrentQuarter: (id: string) => void
+    getCurrentQuarter: () => QuarterWithId | undefined
 
   // Team actions
-  addTeamMember: (member: Omit<TeamMember, 'id'>) => void
-  updateTeamMember: (id: string, updates: Partial<TeamMember>) => void
-  removeTeamMember: (id: string) => void
+  addTeamMember: (member: Omit<TeamMember, 'id'>) => Promise<boolean>
+  updateTeamMember: (id: string, updates: Partial<TeamMember>) => Promise<boolean>
+  removeTeamMember: (id: string) => Promise<boolean>
 
   // Holiday actions
-  addHoliday: (holiday: Omit<Holiday, 'id'>) => void
-  updateHoliday: (id: string, updates: Partial<Holiday>) => void
-  removeHoliday: (id: string) => void
+  addHoliday: (holiday: Omit<Holiday, 'id'>) => Promise<boolean>
+  updateHoliday: (id: string, updates: Partial<Holiday>) => Promise<boolean>
+  removeHoliday: (id: string) => Promise<boolean>
 
   // Plan item actions
-  addPlanItem: (item: Omit<PlanItem, 'id'>) => void
-  updatePlanItem: (id: string, updates: Partial<PlanItem>) => void
-  removePlanItem: (id: string) => void
+  addPlanItem: (item: Omit<PlanItem, 'id'>) => Promise<boolean>
+  updatePlanItem: (id: string, updates: Partial<PlanItem>) => Promise<boolean>
+  removePlanItem: (id: string) => Promise<boolean>
   recalculateAdjustedDays: (id: string) => void
 
   // Settings actions
-  updateSettings: (settings: Partial<Settings>) => void
+  updateSettings: (settings: Partial<Settings>) => Promise<boolean>
 
   // Country actions
   addCountry: (country: Omit<Country, 'id'>) => void
@@ -88,6 +88,7 @@ interface AppActions {
 
   // Utility actions
   resetStore: () => void
+  loadDataFromSupabase: () => Promise<boolean>
   
   // Quarter-scoped data getters
   getCurrentQuarterItems: () => PlanItem[]
@@ -107,39 +108,62 @@ export const useAppStore = create<AppState & AppActions>()(
     },
 
     // Quarter actions
-    addQuarter: (quarter: Omit<QuarterWithId, 'id'>) => {
-      const newQuarter: QuarterWithId = {
-        ...quarter,
-        id: crypto.randomUUID(),
-      }
-      set(state => ({
-        quarters: [...state.quarters, newQuarter],
-      }))
-      
-      // Sync to Supabase
-      supabaseSync.syncQuarter(newQuarter)
-    },
+    addQuarter: async (quarter: Omit<QuarterWithId, 'id'>) => {
+      try {
+        const newQuarter = await supabaseDataService.createQuarter(quarter)
+        if (!newQuarter) return false
 
-    updateQuarter: (id: string, updates: Partial<QuarterWithId>) => {
-      set(state => ({
-        quarters: state.quarters.map(quarter =>
-          quarter.id === id ? { ...quarter, ...updates } : quarter
-        ),
-      }))
-    },
-
-    removeQuarter: (id: string) => {
-      set(state => {
-        const newQuarters = state.quarters.filter(quarter => quarter.id !== id)
-        const newCurrentQuarterId = state.currentQuarterId === id 
-          ? (newQuarters.length > 0 ? newQuarters[0].id : '')
-          : state.currentQuarterId
+        set(state => ({
+          quarters: [...state.quarters, newQuarter],
+        }))
         
-        return {
-          quarters: newQuarters,
-          currentQuarterId: newCurrentQuarterId,
-        }
-      })
+        return true
+      } catch (error) {
+        console.error('Failed to add quarter:', error)
+        return false
+      }
+    },
+
+    updateQuarter: async (id: string, updates: Partial<QuarterWithId>) => {
+      try {
+        const success = await supabaseDataService.updateQuarter(id, updates)
+        if (!success) return false
+
+        set(state => ({
+          quarters: state.quarters.map(quarter =>
+            quarter.id === id ? { ...quarter, ...updates } : quarter
+          ),
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to update quarter:', error)
+        return false
+      }
+    },
+
+    removeQuarter: async (id: string) => {
+      try {
+        const success = await supabaseDataService.deleteQuarter(id)
+        if (!success) return false
+
+        set(state => {
+          const newQuarters = state.quarters.filter(quarter => quarter.id !== id)
+          const newCurrentQuarterId = state.currentQuarterId === id 
+            ? (newQuarters.length > 0 ? newQuarters[0].id : '')
+            : state.currentQuarterId
+          
+          return {
+            quarters: newQuarters,
+            currentQuarterId: newCurrentQuarterId,
+          }
+        })
+        
+        return true
+      } catch (error) {
+        console.error('Failed to remove quarter:', error)
+        return false
+      }
     },
 
     setCurrentQuarter: (id: string) => {
@@ -152,144 +176,230 @@ export const useAppStore = create<AppState & AppActions>()(
     },
 
     // Team actions
-    addTeamMember: (member: Omit<TeamMember, 'id'>) => {
-      const state = get()
-      if (!state.currentQuarterId) {
-        throw new Error('No quarter selected. Please select a quarter first.')
+    addTeamMember: async (member: Omit<TeamMember, 'id'>) => {
+      try {
+        const state = get()
+        if (!state.currentQuarterId) {
+          throw new Error('No quarter selected. Please select a quarter first.')
+        }
+        
+        const memberWithQuarter = {
+          ...member,
+          quarterId: state.currentQuarterId,
+          country: member.country?.toUpperCase() as ISO2,
+        }
+        
+        const newMember = await supabaseDataService.createTeamMember(memberWithQuarter)
+        if (!newMember) return false
+
+        set(state => ({
+          team: [...state.team, newMember],
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to add team member:', error)
+        return false
       }
-      
-      const newMember: TeamMember = {
-        ...member,
-        id: crypto.randomUUID(),
-        quarterId: state.currentQuarterId,
-        country: member.country?.toUpperCase() as ISO2,
-      }
-      set(state => ({
-        team: [...state.team, newMember],
-      }))
     },
 
-    updateTeamMember: (id: string, updates: Partial<TeamMember>) => {
-      set(state => ({
-        team: state.team.map(member =>
-          member.id === id
-            ? {
-                ...member,
-                ...updates,
-                country: updates.country?.toUpperCase() as ISO2,
-              }
-            : member,
-        ),
-      }))
+    updateTeamMember: async (id: string, updates: Partial<TeamMember>) => {
+      try {
+        const success = await supabaseDataService.updateTeamMember(id, updates)
+        if (!success) return false
+
+        set(state => ({
+          team: state.team.map(member =>
+            member.id === id
+              ? {
+                  ...member,
+                  ...updates,
+                  country: updates.country?.toUpperCase() as ISO2,
+                }
+              : member,
+          ),
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to update team member:', error)
+        return false
+      }
     },
 
-    removeTeamMember: (id: string) => {
-      set(state => ({
-        team: state.team.filter(member => member.id !== id),
-      }))
+    removeTeamMember: async (id: string) => {
+      try {
+        const success = await supabaseDataService.deleteTeamMember(id)
+        if (!success) return false
+
+        set(state => ({
+          team: state.team.filter(member => member.id !== id),
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to remove team member:', error)
+        return false
+      }
     },
 
     // Holiday actions
-    addHoliday: (holiday: Omit<Holiday, 'id'>) => {
-      const state = get()
-      if (!state.currentQuarterId) {
-        throw new Error('No quarter selected. Please select a quarter first.')
+    addHoliday: async (holiday: Omit<Holiday, 'id'>) => {
+      try {
+        const state = get()
+        if (!state.currentQuarterId) {
+          throw new Error('No quarter selected. Please select a quarter first.')
+        }
+        
+        const holidayWithQuarter = {
+          ...holiday,
+          quarterId: state.currentQuarterId,
+          countries: holiday.countries || [],
+        }
+        
+        const newHoliday = await supabaseDataService.createHoliday(holidayWithQuarter)
+        if (!newHoliday) return false
+
+        set(state => ({
+          holidays: [...state.holidays, newHoliday],
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to add holiday:', error)
+        return false
       }
-      
-      const newHoliday: Holiday = {
-        ...holiday,
-        id: crypto.randomUUID(),
-        quarterId: state.currentQuarterId,
-        countries: holiday.countries || [], // ensure countries array exists
-      }
-      set(state => ({
-        holidays: [...state.holidays, newHoliday],
-      }))
     },
 
-    updateHoliday: (id: string, updates: Partial<Holiday>) => {
-      set(state => ({
-        holidays: state.holidays.map(holiday =>
-          holiday.id === id
-            ? {
-                ...holiday,
-                ...updates,
-                countries: updates.countries || holiday.countries || [],
-              }
-            : holiday,
-        ),
-      }))
+    updateHoliday: async (id: string, updates: Partial<Holiday>) => {
+      try {
+        const success = await supabaseDataService.updateHoliday(id, updates)
+        if (!success) return false
+
+        set(state => ({
+          holidays: state.holidays.map(holiday =>
+            holiday.id === id
+              ? {
+                  ...holiday,
+                  ...updates,
+                  countries: updates.countries || holiday.countries || [],
+                }
+              : holiday,
+          ),
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to update holiday:', error)
+        return false
+      }
     },
 
-    removeHoliday: (id: string) => {
-      set(state => ({
-        holidays: state.holidays.filter(holiday => holiday.id !== id),
-      }))
+    removeHoliday: async (id: string) => {
+      try {
+        const success = await supabaseDataService.deleteHoliday(id)
+        if (!success) return false
+
+        set(state => ({
+          holidays: state.holidays.filter(holiday => holiday.id !== id),
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to remove holiday:', error)
+        return false
+      }
     },
 
     // Plan item actions
-    addPlanItem: (item: Omit<PlanItem, 'id'>) => {
-      const state = get()
-      if (!state.currentQuarterId) {
-        throw new Error('No quarter selected. Please select a quarter first.')
-      }
-      
-      const newItem: PlanItem = {
-        ...item,
-        id: crypto.randomUUID(),
-        quarterId: state.currentQuarterId,
-      }
+    addPlanItem: async (item: Omit<PlanItem, 'id'>) => {
+      try {
+        const state = get()
+        if (!state.currentQuarterId) {
+          throw new Error('No quarter selected. Please select a quarter first.')
+        }
+        
+        const itemWithQuarter = {
+          ...item,
+          quarterId: state.currentQuarterId,
+        }
 
-      // Calculate adjusted days if baseDays and certainty are provided
-      if (newItem.baseDays && newItem.certainty) {
-        newItem.adjustedDays = calculateAdjustedDays(
-          newItem.baseDays,
-          newItem.certainty,
-          state.settings.certaintyMultipliers,
-        )
-      }
+        // Calculate adjusted days if baseDays and certainty are provided
+        if (itemWithQuarter.baseDays && itemWithQuarter.certainty) {
+          itemWithQuarter.adjustedDays = calculateAdjustedDays(
+            itemWithQuarter.baseDays,
+            itemWithQuarter.certainty,
+            state.settings.certaintyMultipliers,
+          )
+        }
 
-      set(state => ({
-        items: [...state.items, newItem],
-      }))
-      
-      // Sync to Supabase
-      supabaseSync.syncPlanItem(newItem)
+        const newItem = await supabaseDataService.createPlanItem(itemWithQuarter)
+        if (!newItem) return false
+
+        set(state => ({
+          items: [...state.items, newItem],
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to add plan item:', error)
+        return false
+      }
     },
 
-    updatePlanItem: (id: string, updates: Partial<PlanItem>) => {
-      set(state => {
-        const updatedItems = state.items.map(item => {
-          if (item.id === id) {
-            const updatedItem = { ...item, ...updates }
+    updatePlanItem: async (id: string, updates: Partial<PlanItem>) => {
+      try {
+        const success = await supabaseDataService.updatePlanItem(id, updates)
+        if (!success) return false
 
-            // Recalculate adjusted days if baseDays or certainty changed
-            if (
-              (updates.baseDays !== undefined ||
-                updates.certainty !== undefined) &&
-              updatedItem.baseDays &&
-              updatedItem.certainty
-            ) {
-              updatedItem.adjustedDays = calculateAdjustedDays(
-                updatedItem.baseDays,
-                updatedItem.certainty,
-                state.settings.certaintyMultipliers,
-              )
+        set(state => {
+          const updatedItems = state.items.map(item => {
+            if (item.id === id) {
+              const updatedItem = { ...item, ...updates }
+
+              // Recalculate adjusted days if baseDays or certainty changed
+              if (
+                (updates.baseDays !== undefined ||
+                  updates.certainty !== undefined) &&
+                updatedItem.baseDays &&
+                updatedItem.certainty
+              ) {
+                updatedItem.adjustedDays = calculateAdjustedDays(
+                  updatedItem.baseDays,
+                  updatedItem.certainty,
+                  state.settings.certaintyMultipliers,
+                )
+              }
+
+              return updatedItem
             }
+            return item
+          })
 
-            return updatedItem
-          }
-          return item
+          return { items: updatedItems }
         })
-
-        return { items: updatedItems }
-      })
+        
+        return true
+      } catch (error) {
+        console.error('Failed to update plan item:', error)
+        return false
+      }
     },
 
-    removePlanItem: (id: string) => {
-      set(state => ({
-        items: state.items.filter(item => item.id !== id),
-      }))
+    removePlanItem: async (id: string) => {
+      try {
+        const success = await supabaseDataService.deletePlanItem(id)
+        if (!success) return false
+
+        set(state => ({
+          items: state.items.filter(item => item.id !== id),
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to remove plan item:', error)
+        return false
+      }
     },
 
     recalculateAdjustedDays: (id: string) => {
@@ -313,10 +423,21 @@ export const useAppStore = create<AppState & AppActions>()(
     },
 
     // Settings actions
-    updateSettings: (settings: Partial<Settings>) => {
-      set(state => ({
-        settings: { ...state.settings, ...settings },
-      }))
+    updateSettings: async (settings: Partial<Settings>) => {
+      try {
+        const newSettings = { ...get().settings, ...settings }
+        const success = await supabaseDataService.updateSettings(newSettings)
+        if (!success) return false
+
+        set(state => ({
+          settings: newSettings,
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to update settings:', error)
+        return false
+      }
     },
 
     // Country actions
@@ -370,6 +491,20 @@ export const useAppStore = create<AppState & AppActions>()(
     resetStore: () => {
       set(initialState)
     },
+
+    loadDataFromSupabase: async () => {
+      try {
+        const appState = await supabaseDataService.loadAllData()
+        if (appState) {
+          set(appState)
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Failed to load data from Supabase:', error)
+        return false
+      }
+    },
     
     // Quarter-scoped data getters
     getCurrentQuarterItems: () => {
@@ -395,39 +530,71 @@ export const useAppStore = create<AppState & AppActions>()(
 // Persistence middleware
 const STORAGE_KEY = 'quarterback-app-state'
 
-// Load initial state from localStorage and migrate if needed
-const savedState = load<AppState>(STORAGE_KEY, initialState)
-if (savedState) {
-  // Check if migration is needed
-  if (needsMigration(savedState)) {
-    console.log('Data migration needed, running migration...')
-    
-    // Create backup before migration
-    const backup = createBackup(savedState)
-    localStorage.setItem(`${STORAGE_KEY}-backup-${Date.now()}`, backup)
-    console.log('Backup created before migration')
-    
-    // Run migration
-    const migrationResult = migrateToQuarterCentric(savedState)
-    if (migrationResult.success) {
-      console.log('Migration completed successfully:', migrationResult)
-      useAppStore.setState(savedState)
-      // Set flag to show migration notification
-      localStorage.setItem('quarterback-migration-completed', 'true')
+// Initialize with Supabase-first approach
+const initializeApp = async () => {
+  try {
+    // Try to load from Supabase first
+    const supabaseData = await supabaseDataService.loadAllData()
+    if (supabaseData) {
+      console.log('Loaded data from Supabase')
+      useAppStore.setState(supabaseData)
+      return
+    }
+
+    // Fallback to localStorage if Supabase fails
+    const savedState = load<AppState>(STORAGE_KEY, initialState)
+    if (savedState) {
+      // Check if migration is needed
+      if (needsMigration(savedState)) {
+        console.log('Data migration needed, running migration...')
+        
+        // Create backup before migration
+        const backup = createBackup(savedState)
+        localStorage.setItem(`${STORAGE_KEY}-backup-${Date.now()}`, backup)
+        console.log('Backup created before migration')
+        
+        // Run migration
+        const migrationResult = migrateToQuarterCentric(savedState)
+        if (migrationResult.success) {
+          console.log('Migration completed successfully:', migrationResult)
+          useAppStore.setState(savedState)
+          // Set flag to show migration notification
+          localStorage.setItem('quarterback-migration-completed', 'true')
+        } else {
+          console.error('Migration failed:', migrationResult.errors)
+          // Use initial state if migration fails
+          useAppStore.setState(initialState)
+        }
+      } else {
+        console.log('Loaded data from localStorage cache')
+        useAppStore.setState(savedState)
+      }
     } else {
-      console.error('Migration failed:', migrationResult.errors)
-      // Use initial state if migration fails
+      console.log('No saved data found, using initial state')
       useAppStore.setState(initialState)
     }
-  } else {
-    useAppStore.setState(savedState)
+  } catch (error) {
+    console.error('Failed to initialize app:', error)
+    // Fallback to localStorage cache
+    const cachedData = supabaseDataService.loadFromCache()
+    if (cachedData) {
+      console.log('Loaded data from localStorage cache (fallback)')
+      useAppStore.setState(cachedData)
+    } else {
+      console.log('No cached data found, using initial state')
+      useAppStore.setState(initialState)
+    }
   }
 }
 
-// Subscribe to state changes and save to localStorage
+// Initialize the app
+initializeApp()
+
+// Subscribe to state changes and cache to localStorage
 useAppStore.subscribe(
   state => state,
   state => {
+    // Cache to localStorage for offline access
     save(STORAGE_KEY, state)
   },
 )
