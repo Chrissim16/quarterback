@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { workingDaysBetween, validateDateRange } from '../../lib/dates'
 import { downloadData, uploadData } from '../../lib/export'
+import { migrateLocalStorageToSupabase, hasCompletedMigration, getMigrationDate } from '../../lib/migrateToSupabase'
 import SupabaseConfig from '../supabase/SupabaseConfig'
 
 const GeneralSettings = () => {
@@ -11,6 +12,8 @@ const GeneralSettings = () => {
   const [tempMultipliers, setTempMultipliers] = useState(settings.certaintyMultipliers)
   const [hasChanges, setHasChanges] = useState(false)
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' })
+  const [migrationStatus, setMigrationStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' })
+  const [isMigrating, setIsMigrating] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Calculate working days in quarter
@@ -67,6 +70,28 @@ const GeneralSettings = () => {
 
     // Clear status after 3 seconds
     setTimeout(() => setImportStatus({ type: null, message: '' }), 3000)
+  }
+
+  const handleMigration = async () => {
+    setIsMigrating(true)
+    setMigrationStatus({ type: null, message: '' })
+    
+    try {
+      const result = await migrateLocalStorageToSupabase()
+      setMigrationStatus({ 
+        type: result.success ? 'success' : 'error', 
+        message: result.message 
+      })
+      setTimeout(() => setMigrationStatus({ type: null, message: '' }), 5000)
+    } catch (error) {
+      setMigrationStatus({ 
+        type: 'error', 
+        message: `Migration failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      })
+      setTimeout(() => setMigrationStatus({ type: null, message: '' }), 5000)
+    } finally {
+      setIsMigrating(false)
+    }
   }
 
   return (
@@ -209,6 +234,16 @@ const GeneralSettings = () => {
           </div>
         )}
 
+        {migrationStatus.type && (
+          <div className={`mb-4 p-3 rounded-lg ${
+            migrationStatus.type === 'success' 
+              ? 'bg-green-50 border border-green-200 text-green-800' 
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}>
+            {migrationStatus.message}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Export */}
           <div className="flex-1">
@@ -251,6 +286,30 @@ const GeneralSettings = () => {
         <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="text-sm text-yellow-800">
             <strong>⚠️ Important:</strong> Importing data will replace all current data. Make sure to export first if you want to keep your current data.
+          </div>
+        </div>
+
+        {/* Supabase Migration */}
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="text-sm font-medium text-blue-900 mb-2">Supabase Migration</h4>
+          <p className="text-xs text-blue-700 mb-3">
+            Migrate your localStorage data to Supabase for cross-device sync and backup.
+          </p>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-blue-800">
+              {hasCompletedMigration() ? (
+                <span>✅ Migration completed on {getMigrationDate() ? new Date(getMigrationDate()!).toLocaleDateString() : 'unknown date'}</span>
+              ) : (
+                <span>Ready to migrate {items.length} items, {team.length} team members, {holidays.length} holidays, and {quarters.length} quarters</span>
+              )}
+            </div>
+            <button
+              onClick={handleMigration}
+              disabled={isMigrating || hasCompletedMigration()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            >
+              {isMigrating ? 'Migrating...' : hasCompletedMigration() ? 'Already Migrated' : '🚀 Migrate to Supabase'}
+            </button>
           </div>
         </div>
 
