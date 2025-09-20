@@ -12,7 +12,8 @@ const TestDataLoader = () => {
     addTeamMember, 
     addHoliday, 
     updateSettings,
-    syncToSupabase 
+    syncToSupabase,
+    setCurrentQuarter
   } = useAppStore()
   
   const [isLoading, setIsLoading] = useState(false)
@@ -606,7 +607,19 @@ const TestDataLoader = () => {
       const existingQuarter = quarters.find(q => q.name === testData.quarter.name)
       if (!existingQuarter) {
         await addQuarter(testData.quarter)
+        // Set the new quarter as current
+        setCurrentQuarter(testData.quarter.id)
+      } else {
+        // If quarter exists, set it as current
+        setCurrentQuarter(existingQuarter.id)
       }
+      
+      // Small delay to ensure state is updated
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Debug: Check current state
+      console.log('Current quarter ID after setting:', testData.quarter.id)
+      console.log('Available quarters:', quarters.map(q => ({ id: q.id, name: q.name })))
 
       // Add features (check for duplicates)
       for (const feature of testData.features) {
@@ -645,6 +658,11 @@ const TestDataLoader = () => {
 
       // Sync to Supabase
       console.log('Starting sync to Supabase...')
+      console.log('Current quarter ID:', testData.quarter.id)
+      console.log('Team members to sync:', testData.teamMembers.length)
+      console.log('Features to sync:', testData.features.length)
+      console.log('Stories to sync:', testData.stories.length)
+      
       const syncResult = await syncToSupabase()
       console.log('Sync result:', syncResult)
       
