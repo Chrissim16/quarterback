@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Database Schema Test</h1>
+    <div id="status">Testing database schema...</div>
+    <div id="results"></div>
+
+    <script>
+        const supabaseUrl = 'https://dlnmpewibjrymrkreitb.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbm1wZXdpYmpyeW1ya3JlaXRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyOTM5NDYsImV4cCI6MjA3Mzg2OTk0Nn0.DqiMFoRMgFEqfDECSXop08Amw3aymBGwTkygPVWwjgc'
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+        
+        async function testSchema() {
+            const statusDiv = document.getElementById('status')
+            const resultsDiv = document.getElementById('results')
+            
+            try {
+                statusDiv.textContent = 'Testing database schema...'
+                
+                // Test 1: Check if tables exist and get their structure
+                const { data: planItemsColumns, error: planItemsError } = await supabase
+                    .rpc('get_table_columns', { table_name: 'plan_items' })
+                
+                const { data: teamMembersColumns, error: teamMembersError } = await supabase
+                    .rpc('get_table_columns', { table_name: 'team_members' })
+                
+                const { data: holidaysColumns, error: holidaysError } = await supabase
+                    .rpc('get_table_columns', { table_name: 'holidays' })
+                
+                // If the function doesn't exist, try a different approach
+                if (planItemsError && planItemsError.code === '42883') {
+                    // Try to query the information_schema directly
+                    const { data: schemaInfo, error: schemaError } = await supabase
+                        .from('information_schema.columns')
+                        .select('table_name, column_name, data_type, is_nullable')
+                        .in('table_name', ['plan_items', 'team_members', 'holidays'])
+                        .order('table_name', { ascending: true })
+                        .order('ordinal_position', { ascending: true })
+                    
+                    if (schemaError) {
+                        throw schemaError
+                    }
+                    
+                    // Group columns by table
+                    const tableColumns = {}
+                    schemaInfo.forEach(row => {
+                        if (!tableColumns[row.table_name]) {
+                            tableColumns[row.table_name] = []
+                        }
+                        tableColumns[row.table_name].push({
+                            name: row.column_name,
+                            type: row.data_type,
+                            nullable: row.is_nullable === 'YES'
+                        })
+                    })
+                    
+                    // Check for required fields
+                    const requiredPlanItemsFields = [
+                        'required_skills', 'priority', 'dependencies', 'blockers',
+                        'estimated_complexity', 'preferred_assignees', 'avoid_assignees',
+                        'max_concurrent_assignments', 'deadline', 'tags'
+                    ]
+                    
+                    const requiredTeamMembersFields = [
+                        'quarter_id', 'skills', 'skill_levels', 'preferences', 'availability'
+                    ]
+                    
+                    const requiredHolidaysFields = [
+                        'quarter_id'
+                    ]
+                    
+                    const planItemsFields = tableColumns.plan_items?.map(col => col.name) || []
+                    const teamMembersFields = tableColumns.team_members?.map(col => col.name) || []
+                    const holidaysFields = tableColumns.holidays?.map(col => col.name) || []
+                    
+                    const missingPlanItemsFields = requiredPlanItemsFields.filter(field => !planItemsFields.includes(field))
+                    const missingTeamMembersFields = requiredTeamMembersFields.filter(field => !teamMembersFields.includes(field))
+                    const missingHolidaysFields = requiredHolidaysFields.filter(field => !holidaysFields.includes(field))
+                    
+                    resultsDiv.innerHTML = `
+                        <h2>Database Schema Analysis</h2>
+                        
+                        <h3>Plan Items Table</h3>
+                        <p><strong>Current fields:</strong> ${planItemsFields.length} fields</p>
+                        <p><strong>Missing required fields:</strong> ${missingPlanItemsFields.length > 0 ? missingPlanItemsFields.join(', ') : 'None'}</p>
+                        <details>
+                            <summary>All fields in plan_items</summary>
+                            <ul>${planItemsFields.map(field => `<li>${field}</li>`).join('')}</ul>
+                        </details>
+                        
+                        <h3>Team Members Table</h3>
+                        <p><strong>Current fields:</strong> ${teamMembersFields.length} fields</p>
+                        <p><strong>Missing required fields:</strong> ${missingTeamMembersFields.length > 0 ? missingTeamMembersFields.join(', ') : 'None'}</p>
+                        <details>
+                            <summary>All fields in team_members</summary>
+                            <ul>${teamMembersFields.map(field => `<li>${field}</li>`).join('')}</ul>
+                        </details>
+                        
+                        <h3>Holidays Table</h3>
+                        <p><strong>Current fields:</strong> ${holidaysFields.length} fields</p>
+                        <p><strong>Missing required fields:</strong> ${missingHolidaysFields.length > 0 ? missingHolidaysFields.join(', ') : 'None'}</p>
+                        <details>
+                            <summary>All fields in holidays</summary>
+                            <ul>${holidaysFields.map(field => `<li>${field}</li>`).join('')}</ul>
+                        </details>
+                        
+                        <h3>Schema Status</h3>
+                        <p><strong>Schema is complete:</strong> ${missingPlanItemsFields.length === 0 && missingTeamMembersFields.length === 0 && missingHolidaysFields.length === 0 ? '✅ Yes' : '❌ No'}</p>
+                        
+                        ${missingPlanItemsFields.length > 0 || missingTeamMembersFields.length > 0 || missingHolidaysFields.length > 0 ? `
+                        <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 1rem; margin: 1rem 0; border-radius: 0.5rem;">
+                            <h4>⚠️ Schema Update Required</h4>
+                            <p>Your database schema is missing fields required for the enhanced assignment engine. Please run the schema update script:</p>
+                            <ol>
+                                <li>Go to your Supabase dashboard</li>
+                                <li>Open the SQL Editor</li>
+                                <li>Run the contents of <code>supabase-schema-updated.sql</code></li>
+                            </ol>
+                        </div>
+                        ` : ''}
+                    `
+                    
+                    if (missingPlanItemsFields.length === 0 && missingTeamMembersFields.length === 0 && missingHolidaysFields.length === 0) {
+                        statusDiv.textContent = '✅ Database schema is complete!'
+                        statusDiv.style.color = 'green'
+                    } else {
+                        statusDiv.textContent = '❌ Database schema needs updates'
+                        statusDiv.style.color = 'red'
+                    }
+                } else {
+                    throw planItemsError
+                }
+                
+            } catch (error) {
+                statusDiv.textContent = '❌ Schema test failed: ' + error.message
+                statusDiv.style.color = 'red'
+                resultsDiv.innerHTML = '<p>Error: ' + error.message + '</p>'
+            }
+        }
+        
+        testSchema()
+    </script>
+</body>
+</html>
