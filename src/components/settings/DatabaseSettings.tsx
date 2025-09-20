@@ -104,9 +104,15 @@ const DatabaseSettings = () => {
     setMessage(null)
     
     try {
-      // Clear localStorage
-      localStorage.removeItem('quarterback-app-state')
-      localStorage.removeItem('quarterback-migration-completed')
+      // Clear all localStorage keys that might contain data
+      const keysToRemove = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && (key.includes('quarterback') || key.includes('supabase'))) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key))
       
       // Clear all Supabase data
       const { supabase } = await import('../../lib/supabase')
@@ -119,8 +125,34 @@ const DatabaseSettings = () => {
       await supabase.from('quarters').delete().neq('id', '')
       await supabase.from('settings').delete().neq('id', '')
       
-      // Reload the page to reset the app state
-      window.location.reload()
+      // Clear the app state in memory
+      const { useAppStore } = await import('../../store/useAppStore')
+      useAppStore.setState({
+        quarters: [],
+        items: [],
+        team: [],
+        holidays: [],
+        settings: {
+          id: 'default',
+          certaintyMultipliers: { Low: 1.5, Mid: 1.2, High: 1.0 },
+          countries: [],
+          strictAppMatching: true,
+          jira: { base_url: '', username: '', project_key: '', is_connected: false, last_sync: null }
+        },
+        currentQuarterId: null,
+        proposals: [],
+        selection: null
+      })
+      
+      setMessage({
+        type: 'success',
+        text: 'All data cleared successfully! The app will reload in 2 seconds...'
+      })
+      
+      // Reload the page after a short delay
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
       
     } catch (error) {
       setMessage({
@@ -211,6 +243,25 @@ const DatabaseSettings = () => {
             </button>
             <span className="text-sm text-red-600">
               ⚠️ Delete ALL data from app and Supabase (cannot be undone)
+            </span>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => {
+                // Clear all localStorage
+                localStorage.clear()
+                // Clear all sessionStorage
+                sessionStorage.clear()
+                // Force reload
+                window.location.reload()
+              }}
+              className="btn-secondary px-4 py-2"
+            >
+              Clear Browser Cache
+            </button>
+            <span className="text-sm text-gray-600">
+              Clear all browser storage and reload (if reset didn't work)
             </span>
           </div>
         </div>
