@@ -16,8 +16,13 @@ export class SupabaseDataService {
     try {
       // Initialize user if not already done
       if (!this.currentUserId) {
-        const user = await supabaseService.initializeUser('temp@example.com')
+        // Try to get stored email first
+        const storedEmail = localStorage.getItem('quarterback-user-email')
+        const userEmail = storedEmail || 'temp@example.com'
+        
+        const user = await supabaseService.initializeUser(userEmail)
         this.currentUserId = user.id
+        console.log('User initialized:', userEmail)
       }
       
       this.isInitialized = true
@@ -511,10 +516,15 @@ export class SupabaseDataService {
    * Helper methods
    */
   private async upsertQuarter(quarter: QuarterWithId): Promise<void> {
+    if (!this.currentUserId) {
+      throw new Error('User not initialized')
+    }
+
     const { error } = await supabase
       .from('quarters')
       .upsert({
         id: quarter.id,
+        user_id: this.currentUserId,
         name: quarter.name,
         description: quarter.description,
         start_iso: quarter.startISO,
@@ -530,10 +540,15 @@ export class SupabaseDataService {
   }
 
   private async upsertPlanItem(item: PlanItem): Promise<void> {
+    if (!this.currentUserId) {
+      throw new Error('User not initialized')
+    }
+
     const { error } = await supabase
       .from('plan_items')
       .upsert({
         id: item.id,
+        user_id: this.currentUserId,
         quarter_id: item.quarterId,
         type: item.type,
         key: item.key || '',
@@ -572,10 +587,15 @@ export class SupabaseDataService {
   }
 
   private async upsertTeamMember(member: TeamMember): Promise<void> {
+    if (!this.currentUserId) {
+      throw new Error('User not initialized')
+    }
+
     const { error } = await supabase
       .from('team_members')
       .upsert({
         id: member.id,
+        user_id: this.currentUserId,
         quarter_id: member.quarterId,
         name: member.name,
         application: member.application || '',
@@ -596,10 +616,15 @@ export class SupabaseDataService {
   }
 
   private async upsertHoliday(holiday: Holiday): Promise<void> {
+    if (!this.currentUserId) {
+      throw new Error('User not initialized')
+    }
+
     const { error } = await supabase
       .from('holidays')
       .upsert({
         id: holiday.id,
+        user_id: this.currentUserId,
         quarter_id: holiday.quarterId,
         date_iso: holiday.dateISO,
         name: holiday.name,
@@ -614,14 +639,26 @@ export class SupabaseDataService {
   }
 
   private async upsertSettings(settings: Settings): Promise<void> {
-    await supabase
+    if (!this.currentUserId) {
+      throw new Error('User not initialized')
+    }
+
+    const { error } = await supabase
       .from('settings')
       .upsert({
         id: 'default',
+        user_id: this.currentUserId,
         certainty_multipliers: settings.certaintyMultipliers,
         countries: settings.countries,
-        strict_app_matching: settings.strictAppMatching
+        strict_app_matching: settings.strictAppMatching,
+        jira: settings.jira
       })
+      .select()
+
+    if (error) {
+      console.error('Failed to upsert settings:', error)
+      throw error
+    }
   }
 
   /**

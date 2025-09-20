@@ -644,12 +644,21 @@ const TestDataLoader = () => {
       await updateSettings(testData.settings)
 
       // Sync to Supabase
+      console.log('Starting sync to Supabase...')
       const syncResult = await syncToSupabase()
+      console.log('Sync result:', syncResult)
       
-      setMessage({
-        type: 'success',
-        text: `Test data loaded successfully! ${testData.features.length} features, ${testData.stories.length} stories, ${testData.teamMembers.length} team members, ${testData.holidays.length} holidays. ${syncResult.success ? 'Synced to Supabase.' : 'Sync to Supabase failed.'}`
-      })
+      if (syncResult.success) {
+        setMessage({
+          type: 'success',
+          text: `Test data loaded successfully! ${testData.features.length} features, ${testData.stories.length} stories, ${testData.teamMembers.length} team members, ${testData.holidays.length} holidays. Synced to Supabase.`
+        })
+      } else {
+        setMessage({
+          type: 'error',
+          text: `Test data loaded but sync failed: ${syncResult.message}`
+        })
+      }
     } catch (error) {
       setMessage({
         type: 'error',
