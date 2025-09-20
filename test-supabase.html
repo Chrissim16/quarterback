@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <div id="status">Testing connection...</div>
+    <div id="results"></div>
+
+    <script>
+        const supabaseUrl = 'https://dlnmpewibjrymrkreitb.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbm1wZXdpYmpyeW1ya3JlaXRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyOTM5NDYsImV4cCI6MjA3Mzg2OTk0Nn0.DqiMFoRMgFEqfDECSXop08Amw3aymBGwTkygPVWwjgc'
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+        
+        async function testConnection() {
+            const statusDiv = document.getElementById('status')
+            const resultsDiv = document.getElementById('results')
+            
+            try {
+                statusDiv.textContent = 'Testing Supabase connection...'
+                
+                // Test 1: Check if we can connect
+                const { data: { user }, error: authError } = await supabase.auth.getUser()
+                console.log('Auth test:', { user, authError })
+                
+                // Test 2: Check if tables exist
+                const { data: quarters, error: quartersError } = await supabase
+                    .from('quarters')
+                    .select('*')
+                    .limit(1)
+                
+                const { data: planItems, error: planItemsError } = await supabase
+                    .from('plan_items')
+                    .select('*')
+                    .limit(1)
+                
+                const { data: teamMembers, error: teamMembersError } = await supabase
+                    .from('team_members')
+                    .select('*')
+                    .limit(1)
+                
+                const { data: holidays, error: holidaysError } = await supabase
+                    .from('holidays')
+                    .select('*')
+                    .limit(1)
+                
+                const { data: settings, error: settingsError } = await supabase
+                    .from('settings')
+                    .select('*')
+                    .limit(1)
+                
+                resultsDiv.innerHTML = `
+                    <h2>Connection Test Results:</h2>
+                    <p><strong>Auth Status:</strong> ${authError ? 'Error: ' + authError.message : 'OK (No user logged in)'}</p>
+                    <p><strong>Quarters Table:</strong> ${quartersError ? 'Error: ' + quartersError.message : 'OK (' + (quarters?.length || 0) + ' records)'}</p>
+                    <p><strong>Plan Items Table:</strong> ${planItemsError ? 'Error: ' + planItemsError.message : 'OK (' + (planItems?.length || 0) + ' records)'}</p>
+                    <p><strong>Team Members Table:</strong> ${teamMembersError ? 'Error: ' + teamMembersError.message : 'OK (' + (teamMembers?.length || 0) + ' records)'}</p>
+                    <p><strong>Holidays Table:</strong> ${holidaysError ? 'Error: ' + holidaysError.message : 'OK (' + (holidays?.length || 0) + ' records)'}</p>
+                    <p><strong>Settings Table:</strong> ${settingsError ? 'Error: ' + settingsError.message : 'OK (' + (settings?.length || 0) + ' records)'}</p>
+                `
+                
+                if (quartersError || planItemsError || teamMembersError || holidaysError || settingsError) {
+                    statusDiv.textContent = '❌ Database schema not set up properly'
+                    statusDiv.style.color = 'red'
+                } else {
+                    statusDiv.textContent = '✅ Supabase connection working!'
+                    statusDiv.style.color = 'green'
+                }
+                
+            } catch (error) {
+                statusDiv.textContent = '❌ Connection failed: ' + error.message
+                statusDiv.style.color = 'red'
+                resultsDiv.innerHTML = '<p>Error: ' + error.message + '</p>'
+            }
+        }
+        
+        testConnection()
+    </script>
+</body>
+</html>

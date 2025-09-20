@@ -505,6 +505,22 @@ export const useAppStore = create<AppState & AppActions>()(
         return false
       }
     },
+
+    syncToSupabase: async () => {
+      try {
+        const state = get()
+        const success = await supabaseDataService.saveAllData(state)
+        if (success) {
+          console.log('Manual sync to Supabase successful')
+          return { success: true, message: 'Data synced to Supabase successfully' }
+        } else {
+          return { success: false, message: 'Failed to sync to Supabase' }
+        }
+      } catch (error) {
+        console.error('Manual sync failed:', error)
+        return { success: false, message: `Sync failed: ${error.message}` }
+      }
+    },
     
     // Quarter-scoped data getters
     getCurrentQuarterItems: () => {
@@ -590,11 +606,20 @@ const initializeApp = async () => {
 // Initialize the app
 initializeApp()
 
-// Subscribe to state changes and cache to localStorage
+// Subscribe to state changes and save to both localStorage and Supabase
 useAppStore.subscribe(
   state => state,
-  state => {
+  async (state) => {
     // Cache to localStorage for offline access
     save(STORAGE_KEY, state)
+    
+    // Also save to Supabase if available
+    try {
+      await supabaseDataService.saveAllData(state)
+      console.log('Data saved to Supabase')
+    } catch (error) {
+      console.error('Failed to save to Supabase:', error)
+      // Don't throw - localStorage backup is still working
+    }
   },
 )

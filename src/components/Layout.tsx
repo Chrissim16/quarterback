@@ -4,7 +4,7 @@ import { formatDateRange, workingDaysBetween } from '../lib/dates'
 import { getMainPageFromHash, getSettingsSectionFromHash } from '../utils/routing'
 import type { LayoutProps, Selection } from '../types'
 
-type SettingsSection = 'general' | 'quarters' | 'countries' | 'holidays' | 'jira'
+type SettingsSection = 'general' | 'quarters' | 'countries' | 'holidays' | 'jira' | 'database'
 
 const Layout = ({ children }: LayoutProps) => {
   const { selection, setSelection, getCurrentQuarter, quarters, setCurrentQuarter } = useAppStore()
@@ -25,6 +25,7 @@ const Layout = ({ children }: LayoutProps) => {
     { key: 'countries', label: 'Countries' },
     { key: 'holidays', label: 'Holidays' },
     { key: 'jira', label: 'Jira Integration' },
+    { key: 'database', label: 'Database' },
   ]
 
   // Handle URL hash changes for settings subpages

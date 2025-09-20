@@ -3,10 +3,11 @@ import GeneralSettings from '../components/settings/GeneralSettings'
 import QuartersSettings from '../components/settings/QuartersSettings'
 import CountriesSettings from '../components/settings/CountriesSettings'
 import JiraSettings from '../components/settings/JiraSettings'
+import DatabaseSettings from '../components/settings/DatabaseSettings'
 import HolidaysPage from './HolidaysPage'
 import { getSettingsSectionFromHash } from '../utils/routing'
 
-type SettingsSection = 'general' | 'quarters' | 'countries' | 'holidays' | 'jira'
+type SettingsSection = 'general' | 'quarters' | 'countries' | 'holidays' | 'jira' | 'database'
 
 const SettingsPage = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>('general')
@@ -38,6 +39,8 @@ const SettingsPage = () => {
         return <HolidaysPage />
       case 'jira':
         return <JiraSettings />
+      case 'database':
+        return <DatabaseSettings />
       default:
         return <GeneralSettings />
     }

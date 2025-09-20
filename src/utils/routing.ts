@@ -1,7 +1,7 @@
 // Routing utilities for handling URL hash navigation
 
 export type MainPage = 'plan' | 'team' | 'settings'
-export type SettingsSection = 'general' | 'quarters' | 'countries' | 'holidays' | 'jira'
+export type SettingsSection = 'general' | 'quarters' | 'countries' | 'holidays' | 'jira' | 'database'
 
 /**
  * Extract the main page from a URL hash
@@ -32,7 +32,7 @@ export function getSettingsSectionFromHash(hash: string): SettingsSection {
   }
   
   const section = hash.replace('#settings-', '') as SettingsSection
-  const validSections: SettingsSection[] = ['general', 'quarters', 'countries', 'holidays', 'jira']
+  const validSections: SettingsSection[] = ['general', 'quarters', 'countries', 'holidays', 'jira', 'database']
   return validSections.includes(section) ? section : 'general'
 }
 
