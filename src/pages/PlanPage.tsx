@@ -295,7 +295,7 @@ const PlanPage = ({ className = '' }: PageProps) => {
           {/* Summary Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Plan Summary */}
-            <div className="card-gradient p-6 animate-float">
+            <div className="card-gradient p-6">
               <h3 className="mb-4 text-lg font-medium text-gray-900">Plan Summary</h3>
               
               {/* Total Adjusted Effort */}
@@ -360,7 +360,7 @@ const PlanPage = ({ className = '' }: PageProps) => {
 
             {/* Assignment Summary */}
             {proposal.hasProposals && (
-              <div className="card p-6 animate-float" style={{ animationDelay: '0.2s' }}>
+              <div className="card p-6">
                 <h3 className="mb-4 text-lg font-medium text-gray-900">Assignment Summary</h3>
                 
                 <div className="space-y-3">
