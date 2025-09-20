@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Database Schema Checker</h1>
+    <p>This tool will check your Supabase database schema and help fix any missing columns.</p>
+    
+    <div id="status"></div>
+    
+    <button onclick="checkSchema()">Check Database Schema</button>
+    <button onclick="fixSchema()">Fix Missing Columns</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2'
+        
+        // Get environment variables
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || prompt('Enter your Supabase URL:')
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || prompt('Enter your Supabase Anon Key:')
+        
+        if (!supabaseUrl || !supabaseKey) {
+            document.getElementById('status').innerHTML = '<div class="error">❌ Supabase credentials not found. Please check your .env.local file or enter them manually.</div>'
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseKey)
+        
+        window.checkSchema = async function() {
+            const statusDiv = document.getElementById('status')
+            const resultsDiv = document.getElementById('results')
+            
+            statusDiv.innerHTML = '<div class="info">🔍 Checking database schema...</div>'
+            resultsDiv.innerHTML = ''
+            
+            try {
+                // Check each table structure
+                const tables = ['users', 'quarters', 'plan_items', 'team_members', 'holidays', 'settings', 'proposals']
+                const results = []
+                
+                for (const table of tables) {
+                    try {
+                        // Get table info by trying to select from it
+                        const { data, error } = await supabase
+                            .from(table)
+                            .select('*')
+                            .limit(1)
+                        
+                        if (error) {
+                            results.push(`❌ Table '${table}': ${error.message}`)
+                        } else {
+                            results.push(`✅ Table '${table}': Exists`)
+                        }
+                    } catch (err) {
+                        results.push(`❌ Table '${table}': ${err.message}`)
+                    }
+                }
+                
+                // Check specific columns for team_members
+                try {
+                    const { data, error } = await supabase
+                        .from('team_members')
+                        .select('id, user_id, quarter_id, name, application, allocation_pct, pto_days, country, skills, skill_levels, preferences, availability')
+                        .limit(1)
+                    
+                    if (error) {
+                        results.push(`❌ team_members columns: ${error.message}`)
+                    } else {
+                        results.push(`✅ team_members columns: All required columns exist`)
+                    }
+                } catch (err) {
+                    results.push(`❌ team_members columns: ${err.message}`)
+                }
+                
+                resultsDiv.innerHTML = '<h3>Schema Check Results:</h3><pre>' + results.join('\n') + '</pre>'
+                statusDiv.innerHTML = '<div class="success">✅ Schema check completed!</div>'
+                
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="error">❌ Schema check failed: ' + error.message + '</div>'
+            }
+        }
+        
+        window.fixSchema = async function() {
+            const statusDiv = document.getElementById('status')
+            const resultsDiv = document.getElementById('results')
+            
+            statusDiv.innerHTML = '<div class="info">🔧 Fixing database schema...</div>'
+            
+            try {
+                // Add missing columns to team_members
+                const alterQueries = [
+                    `ALTER TABLE team_members ADD COLUMN IF NOT EXISTS quarter_id TEXT REFERENCES quarters(id) ON DELETE CASCADE;`,
+                    `ALTER TABLE team_members ADD COLUMN IF NOT EXISTS skills TEXT[] DEFAULT '{}';`,
+                    `ALTER TABLE team_members ADD COLUMN IF NOT EXISTS skill_levels JSONB DEFAULT '{}';`,
+                    `ALTER TABLE team_members ADD COLUMN IF NOT EXISTS preferences JSONB DEFAULT '{}';`,
+                    `ALTER TABLE team_members ADD COLUMN IF NOT EXISTS availability JSONB DEFAULT '{}';`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS required_skills TEXT[] DEFAULT '{}';`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 'Medium' CHECK (priority IN ('Low', 'Medium', 'High', 'Critical'));`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS dependencies TEXT[] DEFAULT '{}';`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS blockers TEXT[] DEFAULT '{}';`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS estimated_complexity TEXT DEFAULT 'Medium' CHECK (estimated_complexity IN ('Simple', 'Medium', 'Complex', 'Very Complex'));`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS preferred_assignees TEXT[] DEFAULT '{}';`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS avoid_assignees TEXT[] DEFAULT '{}';`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS max_concurrent_assignments INTEGER DEFAULT 1 CHECK (max_concurrent_assignments > 0);`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS deadline DATE;`,
+                    `ALTER TABLE plan_items ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}';`,
+                    `ALTER TABLE holidays ADD COLUMN IF NOT EXISTS quarter_id TEXT REFERENCES quarters(id) ON DELETE CASCADE;`
+                ]
+                
+                const results = []
+                for (const query of alterQueries) {
+                    try {
+                        const { error } = await supabase.rpc('exec_sql', { sql: query })
+                        if (error) {
+                            results.push(`❌ ${query}: ${error.message}`)
+                        } else {
+                            results.push(`✅ ${query}`)
+                        }
+                    } catch (err) {
+                        results.push(`❌ ${query}: ${err.message}`)
+                    }
+                }
+                
+                resultsDiv.innerHTML = '<h3>Schema Fix Results:</h3><pre>' + results.join('\n') + '</pre>'
+                statusDiv.innerHTML = '<div class="success">✅ Schema fix completed! Please run the complete schema in Supabase SQL Editor for best results.</div>'
+                
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="error">❌ Schema fix failed: ' + error.message + '</div>'
+            }
+        }
+        
+        window.clearResults = function() {
+            document.getElementById('status').innerHTML = ''
+            document.getElementById('results').innerHTML = ''
+        }
+    </script>
+</body>
+</html>
