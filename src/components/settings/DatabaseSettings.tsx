@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/useAppStore'
 import TestDataLoader from '../TestDataLoader'
 
 const DatabaseSettings = () => {
-  const { syncToSupabase, loadDataFromSupabase } = useAppStore()
+  const { syncToSupabase, loadDataFromSupabase, quarters, removeQuarter } = useAppStore()
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -50,6 +50,49 @@ const DatabaseSettings = () => {
   const handleTestConnection = () => {
     // Open the test page in a new tab
     window.open('/test-supabase.html', '_blank')
+  }
+
+  const handleCleanupDuplicates = async () => {
+    setIsLoading(true)
+    setMessage(null)
+    
+    try {
+      // Find duplicate quarters by name
+      const quarterGroups = quarters.reduce((groups, quarter) => {
+        const name = quarter.name
+        if (!groups[name]) {
+          groups[name] = []
+        }
+        groups[name].push(quarter)
+        return groups
+      }, {} as Record<string, typeof quarters>)
+      
+      let removedCount = 0
+      
+      // Remove duplicates, keeping the first one
+      for (const [name, duplicateQuarters] of Object.entries(quarterGroups)) {
+        if (duplicateQuarters.length > 1) {
+          // Keep the first one, remove the rest
+          const toRemove = duplicateQuarters.slice(1)
+          for (const quarter of toRemove) {
+            await removeQuarter(quarter.id)
+            removedCount++
+          }
+        }
+      }
+      
+      setMessage({
+        type: 'success',
+        text: `Cleanup completed! Removed ${removedCount} duplicate quarters.`
+      })
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: `Cleanup failed: ${error.message}`
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -106,6 +149,19 @@ const DatabaseSettings = () => {
             </button>
             <span className="text-sm text-gray-600">
               Download data from Supabase (overwrites current data)
+            </span>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleCleanupDuplicates}
+              disabled={isLoading}
+              className="btn-secondary px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Cleaning...' : 'Cleanup Duplicates'}
+            </button>
+            <span className="text-sm text-gray-600">
+              Remove duplicate quarters and other data
             </span>
           </div>
         </div>

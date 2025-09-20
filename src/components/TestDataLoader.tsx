@@ -3,6 +3,10 @@ import { useAppStore } from '../store/useAppStore'
 
 const TestDataLoader = () => {
   const { 
+    quarters,
+    items,
+    team,
+    holidays,
     addQuarter, 
     addPlanItem, 
     addTeamMember, 
@@ -598,27 +602,42 @@ const TestDataLoader = () => {
     setMessage(null)
 
     try {
-      // Add quarter
-      await addQuarter(testData.quarter)
+      // Check if quarter already exists, if not add it
+      const existingQuarter = quarters.find(q => q.name === testData.quarter.name)
+      if (!existingQuarter) {
+        await addQuarter(testData.quarter)
+      }
 
-      // Add features
+      // Add features (check for duplicates)
       for (const feature of testData.features) {
-        await addPlanItem(feature)
+        const existingFeature = items.find(item => item.key === feature.key)
+        if (!existingFeature) {
+          await addPlanItem(feature)
+        }
       }
 
-      // Add stories
+      // Add stories (check for duplicates)
       for (const story of testData.stories) {
-        await addPlanItem(story)
+        const existingStory = items.find(item => item.key === story.key)
+        if (!existingStory) {
+          await addPlanItem(story)
+        }
       }
 
-      // Add team members
+      // Add team members (check for duplicates)
       for (const member of testData.teamMembers) {
-        await addTeamMember(member)
+        const existingMember = team.find(m => m.name === member.name)
+        if (!existingMember) {
+          await addTeamMember(member)
+        }
       }
 
-      // Add holidays
+      // Add holidays (check for duplicates)
       for (const holiday of testData.holidays) {
-        await addHoliday(holiday)
+        const existingHoliday = holidays.find(h => h.name === holiday.name && h.dateISO === holiday.dateISO)
+        if (!existingHoliday) {
+          await addHoliday(holiday)
+        }
       }
 
       // Update settings
