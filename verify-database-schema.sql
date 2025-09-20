@@ -36,10 +36,10 @@ ORDER BY ordinal_position;
 
 -- Check if specific columns exist
 SELECT 
-    table_name,
-    column_name,
+    expected.table_name,
+    expected.column_name,
     CASE 
-        WHEN column_name IS NOT NULL THEN 'EXISTS'
+        WHEN c.column_name IS NOT NULL THEN 'EXISTS'
         ELSE 'MISSING'
     END as status
 FROM (
@@ -63,4 +63,4 @@ FROM (
 LEFT JOIN information_schema.columns c 
     ON c.table_name = expected.table_name 
     AND c.column_name = expected.column_name
-ORDER BY table_name, column_name;
+ORDER BY expected.table_name, expected.column_name;

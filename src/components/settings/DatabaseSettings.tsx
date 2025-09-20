@@ -270,6 +270,38 @@ const DatabaseSettings = () => {
           >
             Check Config
           </button>
+          <button
+            onClick={async () => {
+              setIsLoading(true)
+              setMessage(null)
+              
+              try {
+                // Force schema cache refresh by querying all tables
+                const { supabase } = await import('../../lib/supabase')
+                
+                // Query each table to refresh schema cache
+                await supabase.from('team_members').select('quarter_id, skills, skill_levels, preferences, availability').limit(1)
+                await supabase.from('plan_items').select('required_skills, priority, dependencies, blockers, estimated_complexity, preferred_assignees, avoid_assignees, max_concurrent_assignments, deadline, tags').limit(1)
+                await supabase.from('holidays').select('quarter_id').limit(1)
+                
+                setMessage({
+                  type: 'success',
+                  text: 'Schema cache refreshed successfully! Try loading test data again.'
+                })
+              } catch (error) {
+                setMessage({
+                  type: 'error',
+                  text: `Schema refresh failed: ${error.message}`
+                })
+              } finally {
+                setIsLoading(false)
+              }
+            }}
+            disabled={isLoading}
+            className="btn-secondary text-sm px-3 py-1 ml-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Refreshing...' : 'Refresh Schema'}
+          </button>
         </div>
       </div>
 
