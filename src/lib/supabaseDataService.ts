@@ -511,60 +511,106 @@ export class SupabaseDataService {
    * Helper methods
    */
   private async upsertQuarter(quarter: QuarterWithId): Promise<void> {
-    await supabaseService.createQuarter({
-      id: quarter.id,
-      name: quarter.name,
-      description: quarter.description,
-      start_iso: quarter.startISO,
-      end_iso: quarter.endISO,
-      is_current: false
-    })
+    const { error } = await supabase
+      .from('quarters')
+      .upsert({
+        id: quarter.id,
+        name: quarter.name,
+        description: quarter.description,
+        start_iso: quarter.startISO,
+        end_iso: quarter.endISO,
+        is_current: false
+      })
+      .select()
+
+    if (error) {
+      console.error('Failed to upsert quarter:', error)
+      throw error
+    }
   }
 
   private async upsertPlanItem(item: PlanItem): Promise<void> {
-    await supabaseService.createPlanItem({
-      id: item.id,
-      quarter_id: item.quarterId,
-      type: item.type,
-      key: item.key || '',
-      title: item.title,
-      label: item.label || '',
-      application: item.application || '',
-      base_days: item.baseDays,
-      certainty: item.certainty,
-      adjusted_days: item.adjustedDays,
-      notes: item.notes || '',
-      jira_id: item.jiraId || null,
-      jira_key: item.jiraKey || null,
-      jira_status: item.jiraStatus || null,
-      jira_priority: item.jiraPriority || null,
-      jira_assignee: item.jiraAssignee || null,
-      jira_sprint: item.jiraSprint || null,
-      jira_created: item.jiraCreated || null,
-      jira_updated: item.jiraUpdated || null
-    })
+    const { error } = await supabase
+      .from('plan_items')
+      .upsert({
+        id: item.id,
+        quarter_id: item.quarterId,
+        type: item.type,
+        key: item.key || '',
+        title: item.title,
+        label: item.label || '',
+        application: item.application || '',
+        base_days: item.baseDays,
+        certainty: item.certainty,
+        adjusted_days: item.adjustedDays,
+        notes: item.notes || '',
+        jira_id: item.jiraId || null,
+        jira_key: item.jiraKey || null,
+        jira_status: item.jiraStatus || null,
+        jira_priority: item.jiraPriority || null,
+        jira_assignee: item.jiraAssignee || null,
+        jira_sprint: item.jiraSprint || null,
+        jira_created: item.jiraCreated || null,
+        jira_updated: item.jiraUpdated || null,
+        required_skills: item.requiredSkills || [],
+        priority: item.priority || 'Medium',
+        dependencies: item.dependencies || [],
+        blockers: item.blockers || [],
+        estimated_complexity: item.estimatedComplexity || 'Medium',
+        preferred_assignees: item.preferredAssignees || [],
+        avoid_assignees: item.avoidAssignees || [],
+        max_concurrent_assignments: item.maxConcurrentAssignments || 1,
+        deadline: item.deadline || null,
+        tags: item.tags || []
+      })
+      .select()
+
+    if (error) {
+      console.error('Failed to upsert plan item:', error)
+      throw error
+    }
   }
 
   private async upsertTeamMember(member: TeamMember): Promise<void> {
-    await supabaseService.createTeamMember({
-      id: member.id,
-      quarter_id: member.quarterId,
-      name: member.name,
-      application: member.application || '',
-      allocation_pct: member.allocationPct || 100,
-      pto_days: member.ptoDays || 0,
-      country: member.country || null
-    })
+    const { error } = await supabase
+      .from('team_members')
+      .upsert({
+        id: member.id,
+        quarter_id: member.quarterId,
+        name: member.name,
+        application: member.application || '',
+        allocation_pct: member.allocationPct || 100,
+        pto_days: member.ptoDays || 0,
+        country: member.country || null,
+        skills: member.skills || [],
+        skill_levels: member.skillLevels || {},
+        preferences: member.preferences || {},
+        availability: member.availability || {}
+      })
+      .select()
+
+    if (error) {
+      console.error('Failed to upsert team member:', error)
+      throw error
+    }
   }
 
   private async upsertHoliday(holiday: Holiday): Promise<void> {
-    await supabaseService.createHoliday({
-      id: holiday.id,
-      quarter_id: holiday.quarterId,
-      date_iso: holiday.dateISO,
-      name: holiday.name,
-      countries: holiday.countries || []
-    })
+    const { error } = await supabase
+      .from('holidays')
+      .upsert({
+        id: holiday.id,
+        quarter_id: holiday.quarterId,
+        date_iso: holiday.dateISO,
+        name: holiday.name,
+        countries: holiday.countries || []
+      })
+      .select()
+
+    if (error) {
+      console.error('Failed to upsert holiday:', error)
+      throw error
+    }
   }
 
   private async upsertSettings(settings: Settings): Promise<void> {
