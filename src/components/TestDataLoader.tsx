@@ -620,6 +620,10 @@ const TestDataLoader = () => {
       // Debug: Check current state
       console.log('Current quarter ID after setting:', testData.quarter.id)
       console.log('Available quarters:', quarters.map(q => ({ id: q.id, name: q.name })))
+      
+      // Check if currentQuarterId is actually set in the store
+      console.log('Store currentQuarterId:', useAppStore.getState().currentQuarterId)
+      console.log('Store quarters:', useAppStore.getState().quarters.map(q => ({ id: q.id, name: q.name })))
 
       // Add features (check for duplicates)
       for (const feature of testData.features) {
@@ -638,12 +642,22 @@ const TestDataLoader = () => {
       }
 
       // Add team members (check for duplicates)
+      console.log('Adding team members...')
       for (const member of testData.teamMembers) {
         const existingMember = team.find(m => m.name === member.name)
         if (!existingMember) {
-          await addTeamMember(member)
+          console.log('Adding team member:', member.name, 'with quarterId:', member.quarterId)
+          const success = await addTeamMember(member)
+          console.log('Team member added successfully:', success)
+        } else {
+          console.log('Team member already exists:', member.name)
         }
       }
+      
+      // Debug: Check team state after adding
+      console.log('Team members in store after adding:', team.length)
+      console.log('Current quarter ID:', testData.quarter.id)
+      console.log('Team members for current quarter:', team.filter(m => m.quarterId === testData.quarter.id).length)
 
       // Add holidays (check for duplicates)
       for (const holiday of testData.holidays) {

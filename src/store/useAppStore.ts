@@ -179,6 +179,9 @@ export const useAppStore = create<AppState & AppActions>()(
     addTeamMember: async (member: Omit<TeamMember, 'id'>) => {
       try {
         const state = get()
+        console.log('addTeamMember called with member:', member.name)
+        console.log('Current quarter ID in store:', state.currentQuarterId)
+        
         if (!state.currentQuarterId) {
           throw new Error('No quarter selected. Please select a quarter first.')
         }
@@ -189,13 +192,21 @@ export const useAppStore = create<AppState & AppActions>()(
           country: member.country?.toUpperCase() as ISO2,
         }
         
+        console.log('Member with quarter ID:', memberWithQuarter.quarterId)
+        
         const newMember = await supabaseDataService.createTeamMember(memberWithQuarter)
-        if (!newMember) return false
+        if (!newMember) {
+          console.log('Failed to create team member in Supabase')
+          return false
+        }
+        
+        console.log('Team member created in Supabase:', newMember.id)
 
         set(state => ({
           team: [...state.team, newMember],
         }))
         
+        console.log('Team member added to store')
         return true
       } catch (error) {
         console.error('Failed to add team member:', error)
