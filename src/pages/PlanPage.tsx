@@ -2,6 +2,9 @@ import { useState, useMemo } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { usePlanSummary } from '../hooks/usePlanSummary'
 import { useProposal } from '../hooks/useProposal'
+import { useEnhancedProposal } from '../hooks/useEnhancedProposal'
+import AssignmentControls from '../components/assignment/AssignmentControls'
+import AssignmentMetrics from '../components/assignment/AssignmentMetrics'
 import { hasValidApplication } from '../lib/apps'
 import JiraSync from '../components/jira/JiraSync'
 import PlanGridToolbar from '../components/plan/PlanGridToolbar'
@@ -13,6 +16,8 @@ const PlanPage = ({ className = '' }: PageProps) => {
   const items = getCurrentQuarterItems()
   const planSummary = usePlanSummary()
   const proposal = useProposal()
+  const enhancedProposal = useEnhancedProposal()
+  const [useEnhancedEngine, setUseEnhancedEngine] = useState(true)
   const [bulkImportText, setBulkImportText] = useState('')
   const [showBulkImportDialog, setShowBulkImportDialog] = useState(false)
   const [showJiraSync, setShowJiraSync] = useState(false)
@@ -207,7 +212,11 @@ const PlanPage = ({ className = '' }: PageProps) => {
   }
 
   const handleGenerateProposals = async () => {
-    await proposal.generateProposals()
+    if (useEnhancedEngine) {
+      await enhancedProposal.generateProposals()
+    } else {
+      await proposal.generateProposals()
+    }
     // Simple notification - in a real app you'd use a proper toast library
     alert('Proposal updated! Check the Team page to see assignments.')
   }
@@ -523,14 +532,57 @@ const PlanPage = ({ className = '' }: PageProps) => {
             onDuplicate={handleDuplicateItem}
           />
 
+          {/* Enhanced Assignment Engine Toggle */}
+          <div className="card p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Assignment Engine</h3>
+                <p className="text-sm text-gray-600">
+                  {useEnhancedEngine 
+                    ? 'Enhanced engine with skill matching, workload balancing, and dependencies'
+                    : 'Basic engine with application matching only'
+                  }
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={useEnhancedEngine}
+                    onChange={(e) => setUseEnhancedEngine(e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Use Enhanced Engine</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Assignment Controls (Enhanced Engine Only) */}
+          {useEnhancedEngine && (
+            <AssignmentControls
+              strategy={enhancedProposal.strategy}
+              onStrategyChange={enhancedProposal.updateStrategy}
+              manualOverrides={enhancedProposal.manualOverrides}
+              onAddOverride={enhancedProposal.addManualOverride}
+              onRemoveOverride={enhancedProposal.removeManualOverride}
+              strategyOptions={enhancedProposal.strategyOptions}
+            />
+          )}
+
+          {/* Assignment Metrics (Enhanced Engine Only) */}
+          {useEnhancedEngine && enhancedProposal.metrics && (
+            <AssignmentMetrics metrics={enhancedProposal.metrics} />
+          )}
+
           {/* Propose Plan Actions */}
           <div className="flex justify-center space-x-3 pt-6">
             <button
               onClick={handleGenerateProposals}
-              disabled={proposal.isGenerating || items.length === 0}
+              disabled={(useEnhancedEngine ? enhancedProposal.isGenerating : proposal.isGenerating) || items.length === 0}
               className="btn-primary px-8 py-3 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {proposal.isGenerating ? (
+              {(useEnhancedEngine ? enhancedProposal.isGenerating : proposal.isGenerating) ? (
                 <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -543,13 +595,13 @@ const PlanPage = ({ className = '' }: PageProps) => {
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
-                  Propose Plan
+                  {useEnhancedEngine ? 'Generate Enhanced Proposals' : 'Propose Plan'}
                 </>
               )}
             </button>
-            {proposal.hasProposals && (
+            {(useEnhancedEngine ? enhancedProposal.hasProposals : proposal.hasProposals) && (
               <button
-                onClick={proposal.clearProposals}
+                onClick={useEnhancedEngine ? enhancedProposal.clearProposals : proposal.clearProposals}
                 className="btn-secondary px-6 py-3 font-medium"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -562,25 +614,25 @@ const PlanPage = ({ className = '' }: PageProps) => {
         </div>
 
             {/* Assignment Proposals */}
-            {proposal.hasProposals && (
+            {(useEnhancedEngine ? enhancedProposal.hasProposals : proposal.hasProposals) && (
               <div className="card p-6 animate-fadeIn">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Assignment Proposals</h3>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span>Efficiency: {proposal.assignmentEfficiency.toFixed(1)}%</span>
-                    {proposal.totalUnassignedDays > 0 && (
+                    <span>Efficiency: {(useEnhancedEngine ? enhancedProposal.assignmentEfficiency : proposal.assignmentEfficiency).toFixed(1)}%</span>
+                    {(useEnhancedEngine ? enhancedProposal.totalUnassignedDays : proposal.totalUnassignedDays) > 0 && (
                       <span className="text-orange-600 font-medium">
-                        ⚠️ {proposal.totalUnassignedDays.toFixed(1)}d unassigned
+                        ⚠️ {(useEnhancedEngine ? enhancedProposal.totalUnassignedDays : proposal.totalUnassignedDays).toFixed(1)}d unassigned
                       </span>
                     )}
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      Rule: Strict app matching
+                      {useEnhancedEngine ? 'Enhanced Engine' : 'Basic Engine'}
                     </span>
                   </div>
                 </div>
                 
                 <div className="space-y-3">
-                  {proposal.proposals.map((proposal) => (
+                  {(useEnhancedEngine ? enhancedProposal.proposals : proposal.proposals).map((proposal) => (
                     <div key={proposal.itemId} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <div>

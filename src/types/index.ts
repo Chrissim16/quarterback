@@ -29,6 +29,17 @@ export interface PlanItem {
   jiraSprint?: string
   jiraCreated?: string
   jiraUpdated?: string
+  // Enhanced assignment engine fields
+  requiredSkills?: string[] // Skills required for this item
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical' // Item priority
+  dependencies?: string[] // Array of item IDs this item depends on
+  blockers?: string[] // Array of item IDs that block this item
+  estimatedComplexity?: 'Simple' | 'Medium' | 'Complex' | 'Very Complex'
+  preferredAssignees?: string[] // Array of preferred team member IDs
+  avoidAssignees?: string[] // Array of team member IDs to avoid
+  maxConcurrentAssignments?: number // Maximum number of people who can work on this simultaneously
+  deadline?: string // ISO date string for deadline
+  tags?: string[] // Additional tags for categorization
 }
 
 export interface TeamMember {
@@ -39,6 +50,20 @@ export interface TeamMember {
   application?: string
   allocationPct?: number
   ptoDays?: number
+  // Enhanced assignment engine fields
+  skills?: string[] // Array of skill tags (e.g., ['React', 'TypeScript', 'Backend'])
+  skillLevels?: Record<string, 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'> // Skill proficiency levels
+  preferences?: {
+    maxConcurrentItems?: number // Maximum number of items to work on simultaneously
+    preferredItemTypes?: ('Feature' | 'Story')[] // Preferred work types
+    avoidItemTypes?: ('Feature' | 'Story')[] // Work types to avoid
+    maxDailyHours?: number // Maximum hours per day
+  }
+  availability?: {
+    startDate?: string // When they become available
+    endDate?: string // When they become unavailable
+    workingDays?: number[] // Days of week (0=Sunday, 1=Monday, etc.)
+  }
 }
 
 export interface Holiday {
@@ -169,6 +194,15 @@ export interface ProposalItem {
   allocations: ProposalAllocation[]
   unassignedDays?: number // days we could not assign
   status: 'fully-assigned' | 'partially-assigned' | 'unassigned'
+  // Enhanced assignment fields
+  assignmentReason?: string // Why this assignment was made
+  skillMatch?: number // Percentage of required skills matched
+  workloadBalance?: number // How well this balances team workload
+  dependencyStatus?: 'blocked' | 'ready' | 'in-progress' // Dependency status
+  estimatedStartDate?: string // When work can start
+  estimatedEndDate?: string // When work is expected to complete
+  confidence?: 'Low' | 'Medium' | 'High' // Assignment confidence
+  alternatives?: ProposalAllocation[] // Alternative assignment options
 }
 
 // Legacy interface for backward compatibility
@@ -214,4 +248,59 @@ export interface AssignmentOverview {
     allocatedDays: number
     remainingDays: number
   }
+}
+
+// Enhanced assignment engine types
+export interface AssignmentHistory {
+  id: string
+  itemId: string
+  memberId: string
+  action: 'assigned' | 'unassigned' | 'modified' | 'auto-assigned' | 'manual-override'
+  previousDays?: number
+  newDays: number
+  reason?: string
+  timestamp: string
+  userId?: string // Who made the change
+}
+
+export interface ManualOverride {
+  id: string
+  itemId: string
+  memberId: string
+  daysAssigned: number
+  reason: string
+  createdAt: string
+  createdBy?: string
+  isActive: boolean
+}
+
+export interface AssignmentStrategy {
+  name: string
+  description: string
+  algorithm: 'skill-based' | 'workload-balanced' | 'priority-based' | 'deadline-driven' | 'hybrid'
+  weights: {
+    skillMatch: number
+    workloadBalance: number
+    priority: number
+    deadline: number
+    preferences: number
+  }
+  settings: {
+    allowPartialAssignments: boolean
+    maxConcurrentItems: number
+    considerDependencies: boolean
+    respectDeadlines: boolean
+  }
+}
+
+export interface AssignmentMetrics {
+  totalItems: number
+  fullyAssigned: number
+  partiallyAssigned: number
+  unassigned: number
+  averageSkillMatch: number
+  workloadVariance: number
+  dependencyBlocked: number
+  deadlineAtRisk: number
+  efficiency: number
 }
