@@ -243,18 +243,31 @@ const PlanPage = ({ className = '' }: PageProps) => {
         <div className="space-y-6">
           {/* Plan Items Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Plan Items</h2>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Plan Items</h2>
+            </div>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowJiraSync(!showJiraSync)}
-                className="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+                className="btn-primary px-4 py-2 text-sm font-medium"
               >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
                 {showJiraSync ? 'Hide Jira Sync' : 'Jira Sync'}
               </button>
               <button
                 onClick={() => setShowBulkImportDialog(true)}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="btn-secondary px-4 py-2 text-sm font-medium"
               >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
                 Bulk Import
               </button>
             </div>
@@ -262,7 +275,7 @@ const PlanPage = ({ className = '' }: PageProps) => {
 
           {/* Jira Sync Section */}
           {showJiraSync && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <div className="card p-6 animate-fadeIn">
               <JiraSync onSyncComplete={(result) => {
                 console.log('Sync completed:', result)
                 setShowJiraSync(false)
@@ -273,14 +286,14 @@ const PlanPage = ({ className = '' }: PageProps) => {
           {/* Summary Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Plan Summary */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="card-gradient p-6 animate-float">
               <h3 className="mb-4 text-lg font-medium text-gray-900">Plan Summary</h3>
               
               {/* Total Adjusted Effort */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Total Adjusted Effort</span>
-                  <span className="text-2xl font-bold text-blue-600">
+                  <span className="text-3xl font-bold text-gradient">
                     {planSummary.totalAdjustedEffort.toFixed(1)}
                   </span>
                 </div>
@@ -289,9 +302,9 @@ const PlanPage = ({ className = '' }: PageProps) => {
                 </div>
                 
                 {/* Visual Progress Bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="progress">
                   <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="progress-bar"
                     style={{ 
                       width: `${Math.min((planSummary.totalAdjustedEffort / 100) * 100, 100)}%` 
                     }}
@@ -338,15 +351,15 @@ const PlanPage = ({ className = '' }: PageProps) => {
 
             {/* Assignment Summary */}
             {proposal.hasProposals && (
-              <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="card p-6 animate-float" style={{ animationDelay: '0.2s' }}>
                 <h3 className="mb-4 text-lg font-medium text-gray-900">Assignment Summary</h3>
                 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-700">Assignment Efficiency</span>
                     <span className={`text-sm font-semibold ${
-                      proposal.assignmentEfficiency >= 90 ? 'text-green-600' : 
-                      proposal.assignmentEfficiency >= 70 ? 'text-yellow-600' : 'text-red-600'
+                      proposal.assignmentEfficiency >= 90 ? 'text-emerald-600' : 
+                      proposal.assignmentEfficiency >= 70 ? 'text-amber-600' : 'text-red-600'
                     }`}>
                       {proposal.assignmentEfficiency.toFixed(1)}%
                     </span>
@@ -515,15 +528,33 @@ const PlanPage = ({ className = '' }: PageProps) => {
             <button
               onClick={handleGenerateProposals}
               disabled={proposal.isGenerating || items.length === 0}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="btn-primary px-8 py-3 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {proposal.isGenerating ? 'Generating...' : 'Propose Plan'}
+              {proposal.isGenerating ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  Propose Plan
+                </>
+              )}
             </button>
             {proposal.hasProposals && (
               <button
                 onClick={proposal.clearProposals}
-                className="px-6 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors"
+                className="btn-secondary px-6 py-3 font-medium"
               >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
                 Clear
               </button>
             )}
@@ -532,7 +563,7 @@ const PlanPage = ({ className = '' }: PageProps) => {
 
             {/* Assignment Proposals */}
             {proposal.hasProposals && (
-              <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="card p-6 animate-fadeIn">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Assignment Proposals</h3>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">

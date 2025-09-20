@@ -90,17 +90,22 @@ const Layout = ({ children }: LayoutProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="glass border-b border-white/20 px-6 py-4 backdrop-blur-md">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Quarterback</h1>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-lg">Q</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gradient">Quarterback</h1>
+          </div>
           <div className="flex items-center space-x-4">
             {/* Quarter Switcher */}
             <div className="relative" data-quarter-switcher>
               <button
                 onClick={() => setShowQuarterSwitcher(!showQuarterSwitcher)}
-                className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                className="btn-secondary flex items-center space-x-2 px-4 py-2 text-sm font-medium"
               >
                 <span className="font-medium">
                   {currentQuarter ? currentQuarter.name : 'Select Quarter'}
@@ -111,15 +116,17 @@ const Layout = ({ children }: LayoutProps) => {
               </button>
               
               {showQuarterSwitcher && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="absolute right-0 mt-2 w-64 card z-50 animate-float">
                   <div className="p-2">
                     <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-1">Switch Quarter</div>
                     {quarters.map((quarter) => (
                       <button
                         key={quarter.id}
                         onClick={() => handleQuarterSwitch(quarter.id)}
-                        className={`w-full text-left px-2 py-2 text-sm rounded hover:bg-gray-50 transition-colors ${
-                          quarter.id === currentQuarter?.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
+                          quarter.id === currentQuarter?.id 
+                            ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200' 
+                            : 'text-gray-700 hover:bg-gray-50 hover:scale-[1.02]'
                         }`}
                       >
                         <div className="font-medium">{quarter.name}</div>
@@ -154,17 +161,17 @@ const Layout = ({ children }: LayoutProps) => {
 
       <div className="flex">
         {/* Left Sidebar */}
-        <div className="w-64 bg-white border-r border-gray-200 min-h-screen">
+        <div className="w-64 glass border-r border-white/20 min-h-screen">
           <nav className="p-4">
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {navigationItems.map((item) => (
                 <li key={item.key}>
                   <button
                     onClick={() => handleNavigation(item.key)}
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-between group ${
                       selection === item.key
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform -translate-y-0.5'
+                        : 'text-gray-600 hover:bg-white/50 hover:text-gray-900 hover:scale-[1.02]'
                     }`}
                   >
                     <span>{item.label}</span>
@@ -179,15 +186,15 @@ const Layout = ({ children }: LayoutProps) => {
                   
                   {/* Settings Subpages */}
                   {item.key === 'settings' && isSettingsExpanded && (
-                    <ul className="ml-4 mt-1 space-y-1">
+                    <ul className="ml-4 mt-2 space-y-1">
                       {settingsSubpages.map((subpage) => (
                         <li key={subpage.key}>
                           <button
                             onClick={() => handleSettingsSubpage(subpage.key)}
-                            className={`w-full text-left px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                               activeSettingsSection === subpage.key
-                                ? 'bg-blue-50 text-blue-600'
-                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                                ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 border border-blue-200 shadow-sm'
+                                : 'text-gray-500 hover:bg-white/30 hover:text-gray-700 hover:scale-[1.02]'
                             }`}
                           >
                             {subpage.label}
@@ -205,7 +212,9 @@ const Layout = ({ children }: LayoutProps) => {
         {/* Main Content */}
         <div className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
-            {children}
+            <div className="animate-fadeIn">
+              {children}
+            </div>
           </div>
         </div>
       </div>

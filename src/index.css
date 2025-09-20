@@ -1,8 +1,309 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Line clamp utilities */
+/* Custom CSS Variables for Design System */
+:root {
+  /* Brand Colors */
+  --qb-primary: 59 130 246; /* blue-500 */
+  --qb-primary-dark: 37 99 235; /* blue-600 */
+  --qb-primary-light: 147 197 253; /* blue-300 */
+  --qb-secondary: 168 85 247; /* purple-500 */
+  --qb-accent: 16 185 129; /* emerald-500 */
+  --qb-warning: 245 158 11; /* amber-500 */
+  --qb-danger: 239 68 68; /* red-500 */
+  
+  /* Gradient Colors */
+  --qb-gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --qb-gradient-secondary: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  --qb-gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --qb-gradient-cool: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  
+  /* Neutral Colors */
+  --qb-gray-50: 249 250 251;
+  --qb-gray-100: 243 244 246;
+  --qb-gray-200: 229 231 235;
+  --qb-gray-300: 209 213 219;
+  --qb-gray-400: 156 163 175;
+  --qb-gray-500: 107 114 128;
+  --qb-gray-600: 75 85 99;
+  --qb-gray-700: 55 65 81;
+  --qb-gray-800: 31 41 55;
+  --qb-gray-900: 17 24 39;
+  
+  /* Shadows */
+  --qb-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --qb-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --qb-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --qb-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --qb-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Border Radius */
+  --qb-radius-sm: 0.375rem;
+  --qb-radius: 0.5rem;
+  --qb-radius-md: 0.75rem;
+  --qb-radius-lg: 1rem;
+  --qb-radius-xl: 1.5rem;
+  
+  /* Spacing */
+  --qb-space-xs: 0.25rem;
+  --qb-space-sm: 0.5rem;
+  --qb-space: 1rem;
+  --qb-space-lg: 1.5rem;
+  --qb-space-xl: 2rem;
+  --qb-space-2xl: 3rem;
+}
+
+/* Base Styles */
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  
+  /* Enhanced Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+  
+  h1 {
+    @apply text-3xl lg:text-4xl;
+    background: var(--qb-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  h2 {
+    @apply text-2xl lg:text-3xl text-gray-900;
+  }
+  
+  h3 {
+    @apply text-xl lg:text-2xl text-gray-800;
+  }
+  
+  /* Code and Monospace */
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+}
+
+/* Component Styles */
+@layer components {
+  /* Enhanced Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply btn text-white;
+    background: var(--qb-gradient-primary);
+    box-shadow: var(--qb-shadow);
+  }
+  
+  .btn-primary:hover {
+    @apply transform -translate-y-0.5;
+    box-shadow: var(--qb-shadow-lg);
+  }
+  
+  .btn-secondary {
+    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-blue-500;
+    box-shadow: var(--qb-shadow-sm);
+  }
+  
+  .btn-secondary:hover {
+    @apply transform -translate-y-0.5;
+    box-shadow: var(--qb-shadow);
+  }
+  
+  .btn-ghost {
+    @apply btn text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500;
+  }
+  
+  .btn-danger {
+    @apply btn text-white bg-red-500 hover:bg-red-600 focus:ring-red-500;
+    box-shadow: var(--qb-shadow);
+  }
+  
+  .btn-success {
+    @apply btn text-white;
+    background: var(--qb-gradient-secondary);
+    box-shadow: var(--qb-shadow);
+  }
+  
+  .btn-success:hover {
+    @apply transform -translate-y-0.5;
+    box-shadow: var(--qb-shadow-lg);
+  }
+  
+  /* Enhanced Cards */
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 overflow-hidden;
+    box-shadow: var(--qb-shadow-sm);
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .card:hover {
+    @apply transform -translate-y-1;
+    box-shadow: var(--qb-shadow-lg);
+  }
+  
+  .card-gradient {
+    @apply card;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  }
+  
+  .card-primary {
+    @apply card;
+    background: var(--qb-gradient-primary);
+    @apply text-white border-0;
+  }
+  
+  /* Enhanced Inputs */
+  .input {
+    @apply w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+    box-shadow: var(--qb-shadow-sm);
+  }
+  
+  .input:focus {
+    @apply transform scale-[1.02];
+    box-shadow: var(--qb-shadow-md);
+  }
+  
+  .input-error {
+    @apply input border-red-300 focus:ring-red-500;
+  }
+  
+  /* Status Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .badge-success {
+    @apply badge bg-emerald-100 text-emerald-800;
+  }
+  
+  .badge-warning {
+    @apply badge bg-amber-100 text-amber-800;
+  }
+  
+  .badge-danger {
+    @apply badge bg-red-100 text-red-800;
+  }
+  
+  .badge-info {
+    @apply badge bg-blue-100 text-blue-800;
+  }
+  
+  .badge-gradient {
+    @apply badge text-white;
+    background: var(--qb-gradient-primary);
+  }
+  
+  /* Progress Bars */
+  .progress {
+    @apply w-full bg-gray-200 rounded-full overflow-hidden;
+  }
+  
+  .progress-bar {
+    @apply h-2 rounded-full transition-all duration-500 ease-out;
+    background: var(--qb-gradient-primary);
+  }
+  
+  .progress-bar-success {
+    background: var(--qb-gradient-secondary);
+  }
+  
+  .progress-bar-warning {
+    background: var(--qb-gradient-warm);
+  }
+  
+  /* Animated Elements */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-bounce-slow {
+    animation: bounce 2s infinite;
+  }
+  
+  /* Glass Effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20;
+  }
+  
+  /* Gradient Text */
+  .text-gradient {
+    background: var(--qb-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-secondary {
+    background: var(--qb-gradient-secondary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Utility Classes */
+@layer utilities {
 .line-clamp-1 {
   overflow: hidden;
   display: -webkit-box;
@@ -15,4 +316,35 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+  
+  /* Custom Scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128);
+  }
 }
