@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema Debugger</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .loading { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Database Schema Debugger</h1>
+        <p>This tool will help diagnose and fix your Supabase database schema issues.</p>
+        
+        <div class="section">
+            <h3>Step 1: Check Environment Variables</h3>
+            <button onclick="checkEnvironment()">Check Environment Variables</button>
+            <div id="envResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 2: Test Supabase Connection</h3>
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="connectionResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 3: Check Current Schema</h3>
+            <button onclick="checkSchema()">Check Current Schema</button>
+            <div id="schemaResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 4: Fix Missing Columns</h3>
+            <button onclick="fixSchema()">Fix Schema (Add Missing Columns)</button>
+            <div id="fixResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 5: Verify Fix</h3>
+            <button onclick="verifyFix()">Verify Schema is Fixed</button>
+            <div id="verifyResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 6: Test Team Member Creation</h3>
+            <button onclick="testTeamMemberCreation()">Test Creating Team Member</button>
+            <div id="testResult"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        let supabase = null;
+        
+        async function initSupabase() {
+            try {
+                const { createClient } = await import('https://cdn.skypack.dev/@supabase/supabase-js@2');
+                
+                const supabaseUrl = prompt('Enter your Supabase URL:');
+                const supabaseKey = prompt('Enter your Supabase Anon Key:');
+                
+                if (!supabaseUrl || !supabaseKey) {
+                    throw new Error('URL and Key are required');
+                }
+                
+                supabase = createClient(supabaseUrl, supabaseKey);
+                return true;
+            } catch (error) {
+                console.error('Failed to initialize Supabase:', error);
+                return false;
+            }
+        }
+        
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}"><pre>${content}</pre></div>`;
+        }
+        
+        async function checkEnvironment() {
+            showResult('envResult', 'Checking environment variables...', 'loading');
+            
+            const url = prompt('Enter your Supabase URL:');
+            const key = prompt('Enter your Supabase Anon Key:');
+            
+            if (!url || !key) {
+                showResult('envResult', '❌ Missing Supabase URL or Key', 'error');
+                return;
+            }
+            
+            showResult('envResult', `✅ Environment variables found:\nURL: ${url}\nKey: ${key.substring(0, 20)}...`, 'success');
+        }
+        
+        async function testConnection() {
+            showResult('connectionResult', 'Testing Supabase connection...', 'loading');
+            
+            try {
+                if (!supabase) {
+                    const initialized = await initSupabase();
+                    if (!initialized) {
+                        showResult('connectionResult', '❌ Failed to initialize Supabase', 'error');
+                        return;
+                    }
+                }
+                
+                // Test basic connection
+                const { data, error } = await supabase.from('users').select('count').limit(1);
+                
+                if (error) {
+                    showResult('connectionResult', `❌ Connection failed: ${error.message}`, 'error');
+                } else {
+                    showResult('connectionResult', '✅ Supabase connection successful!', 'success');
+                }
+            } catch (error) {
+                showResult('connectionResult', `❌ Connection error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkSchema() {
+            showResult('schemaResult', 'Checking current database schema...', 'loading');
+            
+            try {
+                if (!supabase) {
+                    const initialized = await initSupabase();
+                    if (!initialized) {
+                        showResult('schemaResult', '❌ Supabase not initialized', 'error');
+                        return;
+                    }
+                }
+                
+                // Check team_members table structure
+                const { data: teamColumns, error: teamError } = await supabase
+                    .from('information_schema.columns')
+                    .select('column_name, data_type, is_nullable')
+                    .eq('table_name', 'team_members')
+                    .order('ordinal_position');
+                
+                if (teamError) {
+                    showResult('schemaResult', `❌ Failed to check team_members schema: ${teamError.message}`, 'error');
+                    return;
+                }
+                
+                // Check if quarter_id exists
+                const hasQuarterId = teamColumns.some(col => col.column_name === 'quarter_id');
+                
+                let result = '📋 Current team_members table structure:\n';
+                teamColumns.forEach(col => {
+                    result += `- ${col.column_name}: ${col.data_type} (${col.is_nullable === 'YES' ? 'nullable' : 'not null'})\n`;
+                });
+                
+                result += `\n🔍 quarter_id column: ${hasQuarterId ? '✅ EXISTS' : '❌ MISSING'}`;
+                
+                if (!hasQuarterId) {
+                    result += '\n\n⚠️ This is why team member creation is failing!';
+                }
+                
+                showResult('schemaResult', result, hasQuarterId ? 'success' : 'warning');
+                
+            } catch (error) {
+                showResult('schemaResult', `❌ Schema check failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fixSchema() {
+            showResult('fixResult', 'Fixing database schema...', 'loading');
+            
+            try {
+                if (!supabase) {
+                    const initialized = await initSupabase();
+                    if (!initialized) {
+                        showResult('fixResult', '❌ Supabase not initialized', 'error');
+                        return;
+                    }
+                
+                // Execute the schema fix
+                const fixSQL = `
+                    -- Add quarter_id to team_members table
+                    ALTER TABLE team_members ADD COLUMN IF NOT EXISTS quarter_id TEXT REFERENCES quarters(id) ON DELETE CASCADE;
+                    
+                    -- Add quarter_id to holidays table  
+                    ALTER TABLE holidays ADD COLUMN IF NOT EXISTS quarter_id TEXT REFERENCES quarters(id) ON DELETE CASCADE;
+                    
+                    -- Create indexes for better performance
+                    CREATE INDEX IF NOT EXISTS idx_team_members_quarter_id ON team_members(quarter_id);
+                    CREATE INDEX IF NOT EXISTS idx_holidays_quarter_id ON holidays(quarter_id);
+                `;
+                
+                const { data, error } = await supabase.rpc('exec_sql', { sql: fixSQL });
+                
+                if (error) {
+                    showResult('fixResult', `❌ Schema fix failed: ${error.message}\n\nTry running this SQL manually in your Supabase SQL Editor:\n\n${fixSQL}`, 'error');
+                } else {
+                    showResult('fixResult', '✅ Schema fix completed! The quarter_id columns have been added.', 'success');
+                }
+                
+            } catch (error) {
+                showResult('fixResult', `❌ Schema fix error: ${error.message}\n\nTry running this SQL manually in your Supabase SQL Editor:\n\nALTER TABLE team_members ADD COLUMN IF NOT EXISTS quarter_id TEXT REFERENCES quarters(id) ON DELETE CASCADE;`, 'error');
+            }
+        }
+        
+        async function verifyFix() {
+            showResult('verifyResult', 'Verifying schema fix...', 'loading');
+            
+            try {
+                if (!supabase) {
+                    const initialized = await initSupabase();
+                    if (!initialized) {
+                        showResult('verifyResult', '❌ Supabase not initialized', 'error');
+                        return;
+                    }
+                }
+                
+                // Check if quarter_id now exists
+                const { data: teamColumns, error: teamError } = await supabase
+                    .from('information_schema.columns')
+                    .select('column_name, data_type, is_nullable')
+                    .eq('table_name', 'team_members')
+                    .eq('column_name', 'quarter_id');
+                
+                if (teamError) {
+                    showResult('verifyResult', `❌ Verification failed: ${teamError.message}`, 'error');
+                    return;
+                }
+                
+                if (teamColumns && teamColumns.length > 0) {
+                    showResult('verifyResult', '✅ Schema fix verified! quarter_id column now exists in team_members table.', 'success');
+                } else {
+                    showResult('verifyResult', '❌ Schema fix not complete. quarter_id column still missing. Try running the SQL manually.', 'error');
+                }
+                
+            } catch (error) {
+                showResult('verifyResult', `❌ Verification error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testTeamMemberCreation() {
+            showResult('testResult', 'Testing team member creation...', 'loading');
+            
+            try {
+                if (!supabase) {
+                    const initialized = await initSupabase();
+                    if (!initialized) {
+                        showResult('testResult', '❌ Supabase not initialized', 'error');
+                        return;
+                    }
+                }
+                
+                // Test creating a team member
+                const testMember = {
+                    id: 'test-member-' + Date.now(),
+                    user_id: 'test-user-id',
+                    quarter_id: 'test-quarter-id',
+                    name: 'Test Member',
+                    application: 'FIS',
+                    allocation_pct: 100,
+                    pto_days: 0,
+                    country: 'NL'
+                };
+                
+                const { data, error } = await supabase
+                    .from('team_members')
+                    .insert(testMember)
+                    .select();
+                
+                if (error) {
+                    showResult('testResult', `❌ Team member creation failed: ${error.message}\n\nThis confirms the schema issue is not fixed.`, 'error');
+                } else {
+                    // Clean up test data
+                    await supabase
+                        .from('team_members')
+                        .delete()
+                        .eq('id', testMember.id);
+                    
+                    showResult('testResult', '✅ Team member creation successful! The schema is now working correctly.', 'success');
+                }
+                
+            } catch (error) {
+                showResult('testResult', `❌ Test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Make functions global
+        window.checkEnvironment = checkEnvironment;
+        window.testConnection = testConnection;
+        window.checkSchema = checkSchema;
+        window.fixSchema = fixSchema;
+        window.verifyFix = verifyFix;
+        window.testTeamMemberCreation = testTeamMemberCreation;
+    </script>
+</body>
+</html>

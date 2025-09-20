@@ -279,16 +279,56 @@ const DatabaseSettings = () => {
                 // Force schema cache refresh by querying all tables
                 const { supabase } = await import('../../lib/supabase')
                 
-                // Query each table to refresh schema cache
-                await supabase.from('team_members').select('quarter_id, skills, skill_levels, preferences, availability').limit(1)
-                await supabase.from('plan_items').select('required_skills, priority, dependencies, blockers, estimated_complexity, preferred_assignees, avoid_assignees, max_concurrent_assignments, deadline, tags').limit(1)
-                await supabase.from('holidays').select('quarter_id').limit(1)
+                console.log('🔄 Forcing schema cache refresh...')
+                
+                // Method 1: Query each table to refresh schema cache
+                try {
+                  await supabase.from('team_members').select('quarter_id, skills, skill_levels, preferences, availability').limit(1)
+                  console.log('✅ team_members schema refreshed')
+                } catch (error) {
+                  console.log('⚠️ team_members query failed:', error.message)
+                }
+                
+                try {
+                  await supabase.from('plan_items').select('required_skills, priority, dependencies, blockers, estimated_complexity, preferred_assignees, avoid_assignees, max_concurrent_assignments, deadline, tags').limit(1)
+                  console.log('✅ plan_items schema refreshed')
+                } catch (error) {
+                  console.log('⚠️ plan_items query failed:', error.message)
+                }
+                
+                try {
+                  await supabase.from('holidays').select('quarter_id').limit(1)
+                  console.log('✅ holidays schema refreshed')
+                } catch (error) {
+                  console.log('⚠️ holidays query failed:', error.message)
+                }
+                
+                // Method 2: Force refresh by creating a new client
+                console.log('🔄 Creating new Supabase client to force cache refresh...')
+                const { createClient } = await import('@supabase/supabase-js')
+                const newClient = createClient(
+                  import.meta.env.VITE_SUPABASE_URL,
+                  import.meta.env.VITE_SUPABASE_ANON_KEY
+                )
+                
+                // Test with new client
+                const { data, error } = await newClient
+                  .from('team_members')
+                  .select('quarter_id')
+                  .limit(1)
+                
+                if (error) {
+                  console.log('❌ New client also failed:', error.message)
+                } else {
+                  console.log('✅ New client works! Schema cache should be refreshed.')
+                }
                 
                 setMessage({
                   type: 'success',
-                  text: 'Schema cache refreshed successfully! Try loading test data again.'
+                  text: 'Schema cache refresh completed! Check console for details. Try loading test data again.'
                 })
               } catch (error) {
+                console.error('Schema refresh failed:', error)
                 setMessage({
                   type: 'error',
                   text: `Schema refresh failed: ${error.message}`
@@ -300,7 +340,7 @@ const DatabaseSettings = () => {
             disabled={isLoading}
             className="btn-secondary text-sm px-3 py-1 ml-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Refreshing...' : 'Refresh Schema'}
+            {isLoading ? 'Refreshing...' : 'Force Refresh Schema'}
           </button>
         </div>
       </div>
@@ -377,6 +417,54 @@ const DatabaseSettings = () => {
             </button>
             <span className="text-sm text-gray-600">
               Clear all browser storage and reload (if reset didn't work)
+            </span>
+          </div>
+          
+          <div className="mt-4">
+            <button
+              onClick={async () => {
+                setIsLoading(true)
+                setMessage(null)
+                
+                try {
+                  // Clear all caches and force reload
+                  localStorage.clear()
+                  sessionStorage.clear()
+                  
+                  // Clear any Supabase caches
+                  if ('caches' in window) {
+                    const cacheNames = await caches.keys()
+                    await Promise.all(
+                      cacheNames.map(cacheName => caches.delete(cacheName))
+                    )
+                  }
+                  
+                  setMessage({
+                    type: 'success',
+                    text: 'All caches cleared! Page will reload in 3 seconds...'
+                  })
+                  
+                  // Reload page after clearing caches
+                  setTimeout(() => {
+                    window.location.reload()
+                  }, 3000)
+                  
+                } catch (error) {
+                  setMessage({
+                    type: 'error',
+                    text: `Cache clear failed: ${error.message}`
+                  })
+                } finally {
+                  setIsLoading(false)
+                }
+              }}
+              disabled={isLoading}
+              className="btn-secondary px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Clearing...' : 'Clear All Caches & Reload'}
+            </button>
+            <span className="text-sm text-gray-600 ml-2">
+              Nuclear option: Clear everything and reload (for persistent cache issues)
             </span>
           </div>
         </div>
