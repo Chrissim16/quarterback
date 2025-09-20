@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
+import TestDataLoader from '../TestDataLoader'
 
 const DatabaseSettings = () => {
   const { syncToSupabase, loadDataFromSupabase } = useAppStore()
@@ -131,6 +132,9 @@ const DatabaseSettings = () => {
           </div>
         </div>
       )}
+
+      {/* Test Data Section */}
+      <TestDataLoader />
 
       {/* Help Section */}
       <div className="card p-4 bg-blue-50 border-blue-200">
