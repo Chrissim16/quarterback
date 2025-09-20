@@ -20,13 +20,18 @@ export class SupabaseDataService {
         const storedEmail = localStorage.getItem('quarterback-user-email')
         const userEmail = storedEmail || 'temp@example.com'
         
-        const user = await supabaseService.initializeUser(userEmail)
-        this.currentUserId = user.id
-        console.log('User initialized:', userEmail)
+        const userId = await supabaseService.initializeUser(userEmail)
+        this.currentUserId = userId
+        console.log('User initialized:', userEmail, 'ID:', userId)
       }
       
       this.isInitialized = true
-      console.log('Supabase Data Service initialized')
+      console.log('Supabase Data Service initialized with user ID:', this.currentUserId)
+      
+      if (!this.currentUserId) {
+        throw new Error('User ID not set after initialization')
+      }
+      
       return true
     } catch (error) {
       console.error('Failed to initialize Supabase Data Service:', error)
@@ -517,7 +522,11 @@ export class SupabaseDataService {
    */
   private async upsertQuarter(quarter: QuarterWithId): Promise<void> {
     if (!this.currentUserId) {
-      throw new Error('User not initialized')
+      // Try to reinitialize if user ID is missing
+      const initialized = await this.initialize()
+      if (!initialized || !this.currentUserId) {
+        throw new Error('User not initialized and reinitialization failed')
+      }
     }
 
     const { error } = await supabase
@@ -541,7 +550,11 @@ export class SupabaseDataService {
 
   private async upsertPlanItem(item: PlanItem): Promise<void> {
     if (!this.currentUserId) {
-      throw new Error('User not initialized')
+      // Try to reinitialize if user ID is missing
+      const initialized = await this.initialize()
+      if (!initialized || !this.currentUserId) {
+        throw new Error('User not initialized and reinitialization failed')
+      }
     }
 
     const { error } = await supabase
@@ -588,7 +601,11 @@ export class SupabaseDataService {
 
   private async upsertTeamMember(member: TeamMember): Promise<void> {
     if (!this.currentUserId) {
-      throw new Error('User not initialized')
+      // Try to reinitialize if user ID is missing
+      const initialized = await this.initialize()
+      if (!initialized || !this.currentUserId) {
+        throw new Error('User not initialized and reinitialization failed')
+      }
     }
 
     const { error } = await supabase
@@ -617,7 +634,11 @@ export class SupabaseDataService {
 
   private async upsertHoliday(holiday: Holiday): Promise<void> {
     if (!this.currentUserId) {
-      throw new Error('User not initialized')
+      // Try to reinitialize if user ID is missing
+      const initialized = await this.initialize()
+      if (!initialized || !this.currentUserId) {
+        throw new Error('User not initialized and reinitialization failed')
+      }
     }
 
     const { error } = await supabase
@@ -640,7 +661,11 @@ export class SupabaseDataService {
 
   private async upsertSettings(settings: Settings): Promise<void> {
     if (!this.currentUserId) {
-      throw new Error('User not initialized')
+      // Try to reinitialize if user ID is missing
+      const initialized = await this.initialize()
+      if (!initialized || !this.currentUserId) {
+        throw new Error('User not initialized and reinitialization failed')
+      }
     }
 
     const { error } = await supabase
