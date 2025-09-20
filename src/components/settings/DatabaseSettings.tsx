@@ -47,9 +47,73 @@ const DatabaseSettings = () => {
     }
   }
 
-  const handleTestConnection = () => {
-    // Open the test page in a new tab
-    window.open('/test-supabase.html', '_blank')
+  const handleTestConnection = async () => {
+    setIsLoading(true)
+    setMessage(null)
+    
+    try {
+      // Test basic Supabase connection
+      const { supabase } = await import('../../lib/supabase')
+      
+      if (!supabase) {
+        throw new Error('Supabase not configured. Check your environment variables.')
+      }
+      
+      // Test user initialization
+      const { supabaseService } = await import('../../lib/supabaseService')
+      const testEmail = 'test@example.com'
+      const userId = await supabaseService.initializeUser(testEmail)
+      
+      // Test a simple query
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('id', userId)
+        .single()
+      
+      if (error) {
+        throw new Error(`Database query failed: ${error.message}`)
+      }
+      
+      // Test writing data
+      const testQuarter = {
+        id: 'test-quarter-' + Date.now(),
+        user_id: userId,
+        name: 'Test Quarter',
+        description: 'Test Description',
+        start_iso: '2025-01-01',
+        end_iso: '2025-03-31',
+        is_current: false
+      }
+      
+      const { error: insertError } = await supabase
+        .from('quarters')
+        .insert(testQuarter)
+      
+      if (insertError) {
+        throw new Error(`Insert test failed: ${insertError.message}`)
+      }
+      
+      // Clean up test data
+      await supabase
+        .from('quarters')
+        .delete()
+        .eq('id', testQuarter.id)
+      
+      setMessage({
+        type: 'success',
+        text: 'Supabase connection test successful! Database is working correctly.'
+      })
+      
+    } catch (error) {
+      console.error('Connection test failed:', error)
+      setMessage({
+        type: 'error',
+        text: `Connection test failed: ${error.message}`
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleCleanupDuplicates = async () => {
@@ -183,9 +247,28 @@ const DatabaseSettings = () => {
           </div>
           <button
             onClick={handleTestConnection}
-            className="btn-secondary text-sm px-3 py-1"
+            disabled={isLoading}
+            className="btn-secondary text-sm px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Test Connection
+            {isLoading ? 'Testing...' : 'Test Connection'}
+          </button>
+          <button
+            onClick={() => {
+              const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+              const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+              console.log('Environment variables:')
+              console.log('VITE_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
+              console.log('VITE_SUPABASE_ANON_KEY:', supabaseKey ? 'Set' : 'Missing')
+              setMessage({
+                type: supabaseUrl && supabaseKey ? 'success' : 'error',
+                text: supabaseUrl && supabaseKey 
+                  ? 'Environment variables are configured' 
+                  : 'Environment variables are missing. Check your .env.local file.'
+              })
+            }}
+            className="btn-secondary text-sm px-3 py-1 ml-2"
+          >
+            Check Config
           </button>
         </div>
       </div>

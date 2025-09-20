@@ -660,9 +660,10 @@ const TestDataLoader = () => {
         })
       }
     } catch (error) {
+      console.error('Test data loading failed:', error)
       setMessage({
         type: 'error',
-        text: `Failed to load test data: ${error.message}`
+        text: `Failed to load test data: ${error.message}. Check console for details.`
       })
     } finally {
       setIsLoading(false)
