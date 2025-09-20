@@ -117,7 +117,7 @@ const Layout = ({ children }: LayoutProps) => {
               </button>
               
               {showQuarterSwitcher && (
-                <div className="absolute right-0 mt-2 w-64 card z-50 animate-float">
+                <div className="absolute right-0 mt-2 w-64 card z-50">
                   <div className="p-2">
                     <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-1">Switch Quarter</div>
                     {quarters.map((quarter) => (
