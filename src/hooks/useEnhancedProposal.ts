@@ -14,7 +14,9 @@ import type {
  * Hook to manage enhanced assignment proposals with advanced algorithms
  */
 export const useEnhancedProposal = () => {
-  const { items, team, proposal, setProposal, clearProposal } = useAppStore()
+  const { getCurrentQuarterItems, getCurrentQuarterTeam, proposal, setProposal, clearProposal } = useAppStore()
+  const items = getCurrentQuarterItems()
+  const team = getCurrentQuarterTeam()
   const capacity = useCapacity()
   const [isGenerating, setIsGenerating] = useState(false)
   const [strategy, setStrategy] = useState<AssignmentStrategy>(getDefaultStrategy())

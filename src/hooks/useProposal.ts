@@ -7,7 +7,9 @@ import { generateAssignmentProposals } from '../lib/proposalEngine'
  * Hook to manage assignment proposals
  */
 export const useProposal = () => {
-  const { items, team, proposal, setProposal, clearProposal } = useAppStore()
+  const { getCurrentQuarterItems, getCurrentQuarterTeam, proposal, setProposal, clearProposal } = useAppStore()
+  const items = getCurrentQuarterItems()
+  const team = getCurrentQuarterTeam()
   const capacity = useCapacity()
   const [isGenerating, setIsGenerating] = useState(false)
 

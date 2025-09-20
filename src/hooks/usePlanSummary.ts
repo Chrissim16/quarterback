@@ -17,7 +17,8 @@ export interface PlanSummary {
  * Hook to calculate plan summary statistics
  */
 export const usePlanSummary = (): PlanSummary => {
-  const { items } = useAppStore()
+  const { getCurrentQuarterItems } = useAppStore()
+  const items = getCurrentQuarterItems()
 
   return useMemo(() => {
     // Calculate total adjusted effort

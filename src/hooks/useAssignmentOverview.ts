@@ -7,7 +7,8 @@ import type { MemberAssignment, AssignmentOverview, PlanItem } from '../types'
  * Hook to generate assignment overview from proposals
  */
 export const useAssignmentOverview = (): AssignmentOverview | null => {
-  const { proposal, items } = useAppStore()
+  const { proposal, getCurrentQuarterItems } = useAppStore()
+  const items = getCurrentQuarterItems()
   const capacity = useCapacity()
 
   return useMemo(() => {
@@ -83,7 +84,10 @@ export const useAssignmentOverview = (): AssignmentOverview | null => {
  * Hook to detect if proposal is stale
  */
 export const useProposalStaleness = (): boolean => {
-  const { proposal, items, team, holidays, quarters, currentQuarterId } = useAppStore()
+  const { proposal, getCurrentQuarterItems, getCurrentQuarterTeam, getCurrentQuarterHolidays, quarters, currentQuarterId } = useAppStore()
+  const items = getCurrentQuarterItems()
+  const team = getCurrentQuarterTeam()
+  const holidays = getCurrentQuarterHolidays()
 
   return useMemo(() => {
     if (!proposal) {
