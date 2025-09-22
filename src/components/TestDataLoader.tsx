@@ -662,13 +662,13 @@ const TestDataLoader = () => {
       await updateSettings(testData.settings)
 
       // Check final state after all operations
-      const finalState = useAppStore.getState()
+      const postLoadState = useAppStore.getState()
       console.log('Final state after loading:')
-      console.log('- Quarters:', finalState.quarters.length)
-      console.log('- Items:', finalState.items.length)
-      console.log('- Team members:', finalState.team.length)
-      console.log('- Holidays:', finalState.holidays.length)
-      console.log('- Current quarter ID:', finalState.currentQuarterId)
+      console.log('- Quarters:', postLoadState.quarters.length)
+      console.log('- Items:', postLoadState.items.length)
+      console.log('- Team members:', postLoadState.team.length)
+      console.log('- Holidays:', postLoadState.holidays.length)
+      console.log('- Current quarter ID:', postLoadState.currentQuarterId)
       
       // All data should already be saved to Supabase by individual functions
       setMessage({
