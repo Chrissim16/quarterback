@@ -57,12 +57,30 @@ export class SupabaseDataService {
       ])
 
       // Check for errors
-      if (quartersResult.error) throw quartersResult.error
-      if (itemsResult.error) throw itemsResult.error
-      if (teamResult.error) throw teamResult.error
-      if (holidaysResult.error) throw holidaysResult.error
-      if (countriesResult.error) throw countriesResult.error
-      if (settingsResult.error && settingsResult.error.code !== 'PGRST116') throw settingsResult.error
+      if (quartersResult.error) {
+        console.error('Quarters query error:', quartersResult.error)
+        throw quartersResult.error
+      }
+      if (itemsResult.error) {
+        console.error('Items query error:', itemsResult.error)
+        throw itemsResult.error
+      }
+      if (teamResult.error) {
+        console.error('Team query error:', teamResult.error)
+        throw teamResult.error
+      }
+      if (holidaysResult.error) {
+        console.error('Holidays query error:', holidaysResult.error)
+        throw holidaysResult.error
+      }
+      if (countriesResult.error) {
+        console.error('Countries query error:', countriesResult.error)
+        throw countriesResult.error
+      }
+      if (settingsResult.error && settingsResult.error.code !== 'PGRST116') {
+        console.error('Settings query error:', settingsResult.error)
+        throw settingsResult.error
+      }
 
       // Transform data to match our types
       const quarters: QuarterWithId[] = (quartersResult.data || []).map(q => ({
@@ -114,6 +132,10 @@ export class SupabaseDataService {
         countryCodes: holiday.country_codes || []
       }))
 
+      console.log('Raw countries result:', countriesResult)
+      console.log('Countries data:', countriesResult.data)
+      console.log('Countries data length:', countriesResult.data?.length || 0)
+      
       const countries: Country[] = (countriesResult.data || []).map(country => ({
         code: country.code,
         name: country.name,
