@@ -261,23 +261,48 @@ export const useAppStore = create<AppState & AppActions>()(
     addHoliday: async (holiday: Omit<Holiday, 'id'>) => {
       try {
         const state = get()
-        if (!state.currentQuarterId) {
-          throw new Error('No quarter selected. Please select a quarter first.')
+        
+        // Ensure we have a global quarter for holidays
+        let globalQuarterId = state.quarters.find(q => q.id === 'global')?.id
+        if (!globalQuarterId) {
+          // Create a global quarter if it doesn't exist
+          const globalQuarter = {
+            id: 'global',
+            name: 'Global',
+            description: 'Global holidays and settings',
+            startISO: '2020-01-01',
+            endISO: '2030-12-31'
+          }
+          
+          // Add to store
+          set(state => ({
+            quarters: [...state.quarters, globalQuarter],
+            currentQuarterId: state.currentQuarterId || 'global'
+          }))
+          
+          // Save to Supabase
+          await supabaseDataService.createQuarter(globalQuarter)
+          globalQuarterId = 'global'
         }
         
         const holidayWithQuarter = {
           ...holiday,
-          quarterId: state.currentQuarterId,
+          quarterId: globalQuarterId,
           countryCodes: holiday.countryCodes || [],
         }
         
         const newHoliday = await supabaseDataService.createHoliday(holidayWithQuarter)
-        if (!newHoliday) return false
+        if (!newHoliday) {
+          console.error('Failed to create holiday in Supabase')
+          return false
+        }
 
+        console.log('Holiday created successfully:', newHoliday)
         set(state => ({
           holidays: [...state.holidays, newHoliday],
         }))
         
+        console.log('Holiday added to store. Total holidays:', get().holidays.length)
         return true
       } catch (error) {
         console.error('Failed to add holiday:', error)
@@ -565,8 +590,11 @@ export const useAppStore = create<AppState & AppActions>()(
     
     getCurrentQuarterHolidays: () => {
       const state = get()
-      if (!state.currentQuarterId) return []
-      return state.holidays.filter(holiday => holiday.quarterId === state.currentQuarterId)
+      // Return holidays from global quarter and current quarter
+      return state.holidays.filter(holiday => 
+        holiday.quarterId === 'global' || 
+        holiday.quarterId === state.currentQuarterId
+      )
     },
   })),
 )
