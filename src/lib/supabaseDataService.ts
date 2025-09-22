@@ -111,7 +111,7 @@ export class SupabaseDataService {
         quarterId: holiday.quarter_id,
         dateISO: holiday.date_iso,
         name: holiday.name,
-        countryCodes: holiday.country_codes || []
+        countryCodes: holiday.countries || []
       }))
 
       const countries: Country[] = (countriesResult.data || []).map(country => ({
@@ -457,7 +457,7 @@ export class SupabaseDataService {
         quarter_id: newHoliday.quarterId,
         date_iso: newHoliday.dateISO,
         name: newHoliday.name,
-        countries: newHoliday.countries || []
+        countries: newHoliday.countryCodes || []
       })
 
       return newHoliday

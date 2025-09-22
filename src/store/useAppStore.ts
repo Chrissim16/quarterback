@@ -268,7 +268,7 @@ export const useAppStore = create<AppState & AppActions>()(
         const holidayWithQuarter = {
           ...holiday,
           quarterId: state.currentQuarterId,
-          countries: holiday.countries || [],
+          countryCodes: holiday.countryCodes || [],
         }
         
         const newHoliday = await supabaseDataService.createHoliday(holidayWithQuarter)
@@ -296,7 +296,7 @@ export const useAppStore = create<AppState & AppActions>()(
               ? {
                   ...holiday,
                   ...updates,
-                  countries: updates.countries || holiday.countries || [],
+                  countryCodes: updates.countryCodes || holiday.countryCodes || [],
                 }
               : holiday,
           ),
