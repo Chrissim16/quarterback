@@ -3,14 +3,14 @@ import { useAppStore } from '../../store/useAppStore'
 import type { Country, ISO2 } from '../../types'
 
 const CountriesSettings = () => {
-  const { settings, addCountry, updateCountry, removeCountry } = useAppStore()
+  const { settings, countries, addCountry, updateCountry, removeCountry } = useAppStore()
   const [newCountry, setNewCountry] = useState<Country>({ code: '', name: '' })
   const [editingCountry, setEditingCountry] = useState<ISO2 | null>(null)
 
   const handleAddCountry = () => {
     if (newCountry.code && newCountry.name) {
       const code = newCountry.code.toUpperCase() as ISO2
-      if (code.length === 2 && !settings.countries.some(c => c.code === code)) {
+      if (code.length === 2 && !countries.some(c => c.code === code)) {
         addCountry({ code, name: newCountry.name })
         setNewCountry({ code: '', name: '' })
       }
@@ -99,7 +99,7 @@ const CountriesSettings = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Available Countries</h3>
         
-        {settings.countries.length === 0 ? (
+        {countries.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <div className="text-4xl mb-2">🌍</div>
             <p>No countries added yet</p>
@@ -107,7 +107,7 @@ const CountriesSettings = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {settings.countries.map((country) => (
+            {countries.map((country) => (
               <div key={country.code} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 {editingCountry === country.code ? (
                   <div className="flex-1 flex items-center space-x-3">

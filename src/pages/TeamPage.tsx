@@ -8,7 +8,7 @@ import { hasValidApplication } from '../lib/apps'
 import type { TeamMember, ISO2 } from '../types'
 
 const TeamPage = () => {
-  const { getCurrentQuarterTeam, settings, addTeamMember, updateTeamMember, removeTeamMember } = useAppStore()
+  const { getCurrentQuarterTeam, settings, countries, addTeamMember, updateTeamMember, removeTeamMember } = useAppStore()
   const team = getCurrentQuarterTeam()
   const capacity = useCapacity()
   const assignmentOverview = useAssignmentOverview()
@@ -262,7 +262,7 @@ const TeamPage = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Country</option>
-                {settings.countries.map((country) => (
+                {countries.map((country) => (
                   <option key={country.code} value={country.code}>
                     {country.code} — {country.name}
                   </option>
@@ -343,7 +343,7 @@ const TeamPage = () => {
                   <h3 className="font-medium text-gray-900">{member.name}</h3>
                   {member.country && (
                     <p className="text-sm text-gray-500">
-                      {formatCountryDisplay(member.country, settings.countries)}
+                      {formatCountryDisplay(member.country, countries)}
                     </p>
                   )}
                 </div>

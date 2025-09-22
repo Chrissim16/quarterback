@@ -3,7 +3,7 @@ import { useAppStore } from '../store/useAppStore'
 import type { Holiday, ISO2 } from '../types'
 
 const HolidaysPage = () => {
-  const { getCurrentQuarterHolidays, getCurrentQuarter, settings, addHoliday, updateHoliday, removeHoliday } = useAppStore()
+  const { getCurrentQuarterHolidays, getCurrentQuarter, settings, countries, addHoliday, updateHoliday, removeHoliday } = useAppStore()
   const holidays = getCurrentQuarterHolidays()
   const quarter = getCurrentQuarter()
   const [isAddingHoliday, setIsAddingHoliday] = useState(false)
@@ -71,7 +71,7 @@ const HolidaysPage = () => {
   )
 
   const formatCountryDisplay = (code: ISO2) => {
-    const country = settings.countries.find(c => c.code === code)
+    const country = countries.find(c => c.code === code)
     return country ? `${country.code} — ${country.name}` : code
   }
 
@@ -149,7 +149,7 @@ const HolidaysPage = () => {
               
               {isCountryDropdownOpen && (
                 <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                  {settings.countries.map((country) => (
+                  {countries.map((country) => (
                     <label
                       key={country.code}
                       className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"

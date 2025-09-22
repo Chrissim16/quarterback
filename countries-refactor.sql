@@ -164,7 +164,10 @@ LEFT JOIN countries c ON tm.country = c.code
 WHERE tm.country IS NOT NULL;
 
 -- Check that all holiday country codes are valid
-SELECT DISTINCT unnest(h.country_codes) as country_code, c.name
-FROM holidays h
-LEFT JOIN countries c ON unnest(h.country_codes) = c.code
-WHERE array_length(h.country_codes, 1) > 0;
+SELECT DISTINCT country_code, c.name
+FROM (
+  SELECT unnest(h.country_codes) as country_code
+  FROM holidays h
+  WHERE array_length(h.country_codes, 1) > 0
+) h
+LEFT JOIN countries c ON h.country_code = c.code;

@@ -34,13 +34,13 @@ const initialState: AppState = {
   team: [],
   holidays: [],
   items: [],
+  countries: DEFAULT_COUNTRIES,
   settings: {
     certaintyMultipliers: {
       Low: 1.5,
       Mid: 1.2,
       High: 1.0,
     },
-    countries: DEFAULT_COUNTRIES,
     strictAppMatching: true,
   },
   selection: 'plan',
@@ -455,41 +455,54 @@ export const useAppStore = create<AppState & AppActions>()(
     },
 
     // Country actions
-    addCountry: (country: Omit<Country, 'id'>) => {
-      set(state => {
-        const newCountries = [...state.settings.countries, country]
-        const uniqueCountries = newCountries.filter((c, index, arr) =>
-          arr.findIndex(other => other.code === c.code) === index
-        )
-        const sortedCountries = uniqueCountries.sort((a, b) => a.code.localeCompare(b.code))
+    addCountry: async (country: Omit<Country, 'code'>) => {
+      try {
+        const newCountry = await supabaseDataService.createCountry(country)
+        if (!newCountry) return false
 
-        return {
-          settings: {
-            ...state.settings,
-            countries: sortedCountries,
-          },
-        }
-      })
+        set(state => ({
+          countries: [...state.countries, newCountry],
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to add country:', error)
+        return false
+      }
     },
 
-    updateCountry: (code: ISO2, updates: Partial<Country>) => {
-      set(state => ({
-        settings: {
-          ...state.settings,
-          countries: state.settings.countries.map(country =>
+    updateCountry: async (code: ISO2, updates: Partial<Country>) => {
+      try {
+        const success = await supabaseDataService.updateCountry(code, updates)
+        if (!success) return false
+
+        set(state => ({
+          countries: state.countries.map(country =>
             country.code === code ? { ...country, ...updates } : country
           ),
-        },
-      }))
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to update country:', error)
+        return false
+      }
     },
 
-    removeCountry: (code: ISO2) => {
-      set(state => ({
-        settings: {
-          ...state.settings,
-          countries: state.settings.countries.filter(country => country.code !== code),
-        },
-      }))
+    removeCountry: async (code: ISO2) => {
+      try {
+        const success = await supabaseDataService.deleteCountry(code)
+        if (!success) return false
+
+        set(state => ({
+          countries: state.countries.filter(country => country.code !== code),
+        }))
+        
+        return true
+      } catch (error) {
+        console.error('Failed to remove country:', error)
+        return false
+      }
     },
 
     // Proposal actions

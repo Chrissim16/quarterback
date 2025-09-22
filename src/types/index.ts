@@ -97,7 +97,6 @@ export interface Settings {
     Mid: number
     High: number
   }
-  countries: Country[] // centrally maintained list, sorted by code
   strictAppMatching: boolean // default true; when false, allow fallback behavior
   jira?: {
     baseUrl: string

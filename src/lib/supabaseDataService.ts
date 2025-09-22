@@ -130,11 +130,9 @@ export class SupabaseDataService {
           Mid: 1.2,
           High: 1.0
         },
-        countries: settingsResult.data.countries || [],
         strictAppMatching: settingsResult.data.strict_app_matching ?? true
       } : {
         certaintyMultipliers: { Low: 1.5, Mid: 1.2, High: 1.0 },
-        countries: [],
         strictAppMatching: true
       }
 
@@ -691,7 +689,6 @@ export class SupabaseDataService {
         id: 'default',
         user_id: this.currentUserId,
         certainty_multipliers: settings.certaintyMultipliers,
-        countries: settings.countries,
         strict_app_matching: settings.strictAppMatching,
         jira: settings.jira
       })
@@ -727,6 +724,51 @@ export class SupabaseDataService {
     if (error) {
       console.error('Failed to upsert country:', error)
       throw error
+    }
+  }
+
+  // Public country operations
+  async createCountry(country: Omit<Country, 'code'>): Promise<Country | null> {
+    try {
+      const initialized = await this.initialize()
+      if (!initialized) return null
+
+      const newCountry: Country = {
+        ...country,
+        code: country.code || crypto.randomUUID().substring(0, 2).toUpperCase()
+      }
+
+      await supabaseService.createCountry(newCountry)
+      return newCountry
+    } catch (error) {
+      console.error('Failed to create country:', error)
+      return null
+    }
+  }
+
+  async updateCountry(code: string, updates: Partial<Country>): Promise<boolean> {
+    try {
+      const initialized = await this.initialize()
+      if (!initialized) return false
+
+      await supabaseService.updateCountry(code, updates)
+      return true
+    } catch (error) {
+      console.error('Failed to update country:', error)
+      return false
+    }
+  }
+
+  async deleteCountry(code: string): Promise<boolean> {
+    try {
+      const initialized = await this.initialize()
+      if (!initialized) return false
+
+      await supabaseService.deleteCountry(code)
+      return true
+    } catch (error) {
+      console.error('Failed to delete country:', error)
+      return false
     }
   }
 
