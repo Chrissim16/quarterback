@@ -111,7 +111,7 @@ export class SupabaseDataService {
         quarterId: holiday.quarter_id,
         dateISO: holiday.date_iso,
         name: holiday.name,
-        countryCodes: holiday.countries || []
+        countryCodes: holiday.country_codes || []
       }))
 
       const countries: Country[] = (countriesResult.data || []).map(country => ({
@@ -372,12 +372,25 @@ export class SupabaseDataService {
   async createTeamMember(member: Omit<TeamMember, 'id'>): Promise<TeamMember | null> {
     try {
       const initialized = await this.initialize()
-      if (!initialized) return null
+      if (!initialized) {
+        console.error('Failed to initialize Supabase Data Service for team member creation')
+        return null
+      }
 
       const newMember: TeamMember = {
         ...member,
         id: crypto.randomUUID()
       }
+
+      console.log('Creating team member in Supabase:', {
+        id: newMember.id,
+        quarter_id: newMember.quarterId,
+        name: newMember.name,
+        application: newMember.application || '',
+        allocation_pct: newMember.allocationPct || 100,
+        pto_days: newMember.ptoDays || 0,
+        country: newMember.country || null
+      })
 
       await supabaseService.createTeamMember({
         id: newMember.id,
@@ -389,6 +402,7 @@ export class SupabaseDataService {
         country: newMember.country || null
       })
 
+      console.log('Team member created successfully in Supabase:', newMember.id)
       return newMember
     } catch (error) {
       console.error('Failed to create team member:', error)
@@ -457,7 +471,7 @@ export class SupabaseDataService {
         quarter_id: newHoliday.quarterId,
         date_iso: newHoliday.dateISO,
         name: newHoliday.name,
-        countries: newHoliday.countryCodes || []
+        country_codes: newHoliday.countryCodes || []
       })
 
       return newHoliday
