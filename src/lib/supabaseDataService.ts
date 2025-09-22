@@ -47,6 +47,9 @@ export class SupabaseDataService {
       const initialized = await this.initialize()
       if (!initialized) return null
 
+      console.log('Supabase client available:', !!supabase)
+      console.log('About to query countries table...')
+
       const [quartersResult, itemsResult, teamResult, holidaysResult, countriesResult, settingsResult] = await Promise.all([
         supabase.from('quarters').select('*').order('start_iso'),
         supabase.from('plan_items').select('*').order('created_at'),
@@ -135,6 +138,8 @@ export class SupabaseDataService {
       console.log('Raw countries result:', countriesResult)
       console.log('Countries data:', countriesResult.data)
       console.log('Countries data length:', countriesResult.data?.length || 0)
+      console.log('Countries error:', countriesResult.error)
+      console.log('Countries status:', countriesResult.status)
       
       const countries: Country[] = (countriesResult.data || []).map(country => ({
         code: country.code,
