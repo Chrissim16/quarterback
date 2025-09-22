@@ -55,7 +55,7 @@ export class SupabaseDataService {
         supabase.from('plan_items').select('*').order('created_at'),
         supabase.from('team_members').select('*').order('name'),
         supabase.from('holidays').select('*').order('date_iso'),
-        supabase.from('countries').select('*').order('name'),
+        supabase.from('countries').select('*').order('name').limit(1000),
         supabase.from('settings').select('*').single()
       ])
 
