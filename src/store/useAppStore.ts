@@ -89,6 +89,7 @@ interface AppActions {
   // Utility actions
   resetStore: () => void
   loadDataFromSupabase: () => Promise<boolean>
+  syncToSupabase: () => Promise<{ success: boolean; message: string }>
   
   // Quarter-scoped data getters
   getCurrentQuarterItems: () => PlanItem[]
@@ -117,6 +118,8 @@ export const useAppStore = create<AppState & AppActions>()(
           quarters: [...state.quarters, newQuarter],
         }))
         
+        // Don't trigger automatic sync since we already saved to Supabase
+        console.log('Quarter added and saved to Supabase:', newQuarter.id)
         return true
       } catch (error) {
         console.error('Failed to add quarter:', error)
@@ -618,19 +621,32 @@ const initializeApp = async () => {
 initializeApp()
 
 // Subscribe to state changes and save to both localStorage and Supabase
+// Track if we're currently saving to prevent duplicate saves
+let isSavingToSupabase = false
+let lastSyncTime = 0
+const SYNC_DEBOUNCE_MS = 2000 // Only sync every 2 seconds
+
 useAppStore.subscribe(
   state => state,
   async (state) => {
-    // Cache to localStorage for offline access
+    // Always cache to localStorage for offline access
     save(STORAGE_KEY, state)
     
-    // Also save to Supabase if available
-    try {
-      await supabaseDataService.saveAllData(state)
-      console.log('Data saved to Supabase')
-    } catch (error) {
-      console.error('Failed to save to Supabase:', error)
-      // Don't throw - localStorage backup is still working
+    // Only sync to Supabase if we haven't synced recently (debounced)
+    const now = Date.now()
+    if (!isSavingToSupabase && (now - lastSyncTime) > SYNC_DEBOUNCE_MS) {
+      isSavingToSupabase = true
+      lastSyncTime = now
+      
+      try {
+        await supabaseDataService.saveAllData(state)
+        console.log('Data synced to Supabase (debounced)')
+      } catch (error) {
+        console.error('Failed to save to Supabase:', error)
+        // Don't throw - localStorage backup is still working
+      } finally {
+        isSavingToSupabase = false
+      }
     }
   },
 )
