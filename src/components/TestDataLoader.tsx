@@ -45,8 +45,7 @@ const TestDataLoader = () => {
         estimatedComplexity: 'Very Complex' as const,
         maxConcurrentAssignments: 3,
         deadline: '2025-03-15',
-        tags: ['core', 'treasury', 'critical-path'],
-        quarterId: 'q1-2025'
+        tags: ['core', 'treasury', 'critical-path']
       },
       {
         id: 'f2',
@@ -65,7 +64,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 4,
         deadline: '2025-03-20',
         tags: ['trading', 'fx', 'real-time'],
-        quarterId: 'q1-2025'
       },
       {
         id: 'f3',
@@ -84,7 +82,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 2,
         deadline: '2025-03-10',
         tags: ['compliance', 'regulatory', 'reporting'],
-        quarterId: 'q1-2025'
       },
       {
         id: 'f4',
@@ -103,7 +100,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 3,
         deadline: '2025-03-25',
         tags: ['analytics', 'reporting', 'dashboard'],
-        quarterId: 'q1-2025'
       },
       {
         id: 'f5',
@@ -122,7 +118,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 3,
         deadline: '2025-03-18',
         tags: ['integration', 'api', 'connectivity'],
-        quarterId: 'q1-2025'
       },
       {
         id: 'f6',
@@ -141,7 +136,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 2,
         deadline: '2025-03-12',
         tags: ['security', 'user-management', 'rbac'],
-        quarterId: 'q1-2025'
       },
       {
         id: 'f7',
@@ -160,7 +154,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 2,
         deadline: '2025-03-28',
         tags: ['mobile', 'treasury', 'app'],
-        quarterId: 'q1-2025'
       },
       {
         id: 'f8',
@@ -179,7 +172,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 2,
         deadline: '2025-03-22',
         tags: ['workflow', 'automation', 'approvals'],
-        quarterId: 'q1-2025'
       },
       {
         id: 'f9',
@@ -198,7 +190,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 2,
         deadline: '2025-03-08',
         tags: ['migration', 'etl', 'legacy'],
-        quarterId: 'q1-2025'
       },
       {
         id: 'f10',
@@ -217,7 +208,6 @@ const TestDataLoader = () => {
         maxConcurrentAssignments: 2,
         deadline: '2025-03-30',
         tags: ['monitoring', 'performance', 'alerting'],
-        quarterId: 'q1-2025'
       }
     ],
     stories: [
@@ -234,7 +224,6 @@ const TestDataLoader = () => {
         requiredSkills: ['Frontend Development', 'Data Visualization', 'Treasury Management'],
         priority: 'High' as const,
         estimatedComplexity: 'Complex' as const,
-        quarterId: 'q1-2025'
       },
       {
         id: 's2',
@@ -249,7 +238,6 @@ const TestDataLoader = () => {
         requiredSkills: ['Machine Learning', 'Financial Modeling', 'Backend Development'],
         priority: 'High' as const,
         estimatedComplexity: 'Very Complex' as const,
-        quarterId: 'q1-2025'
       },
       {
         id: 's3',
@@ -264,7 +252,6 @@ const TestDataLoader = () => {
         requiredSkills: ['Risk Management', 'Backend Development', 'Alerting Systems'],
         priority: 'High' as const,
         estimatedComplexity: 'Complex' as const,
-        quarterId: 'q1-2025'
       },
       {
         id: 's4',
@@ -279,7 +266,6 @@ const TestDataLoader = () => {
         requiredSkills: ['API Integration', 'Real-time Systems', 'Financial Data'],
         priority: 'High' as const,
         estimatedComplexity: 'Complex' as const,
-        quarterId: 'q1-2025'
       },
       {
         id: 's5',
@@ -294,7 +280,6 @@ const TestDataLoader = () => {
         requiredSkills: ['Trading Systems', 'High Performance', 'Order Management'],
         priority: 'High' as const,
         estimatedComplexity: 'Very Complex' as const,
-        quarterId: 'q1-2025'
       }
     ],
     teamMembers: [
@@ -321,7 +306,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm2',
@@ -346,7 +330,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm3',
@@ -371,7 +354,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm4',
@@ -396,7 +378,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm5',
@@ -421,7 +402,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm6',
@@ -446,7 +426,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm7',
@@ -471,7 +450,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm8',
@@ -496,7 +474,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm9',
@@ -521,7 +498,6 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       },
       {
         id: 'tm10',
@@ -546,42 +522,41 @@ const TestDataLoader = () => {
           startDate: '2025-01-01',
           workingDays: [1, 2, 3, 4, 5]
         },
-        quarterId: 'q1-2025'
       }
     ],
     holidays: [
       // Netherlands 2025
-      { id: 'h1', dateISO: '2025-01-01', name: 'New Year\'s Day', countries: ['NL'], quarterId: 'q1-2025' },
-      { id: 'h2', dateISO: '2025-04-18', name: 'Good Friday', countries: ['NL'], quarterId: 'q1-2025' },
-      { id: 'h3', dateISO: '2025-04-21', name: 'Easter Monday', countries: ['NL'], quarterId: 'q1-2025' },
-      { id: 'h4', dateISO: '2025-04-27', name: 'King\'s Day', countries: ['NL'], quarterId: 'q1-2025' },
-      { id: 'h5', dateISO: '2025-05-05', name: 'Liberation Day', countries: ['NL'], quarterId: 'q1-2025' },
-      { id: 'h6', dateISO: '2025-05-29', name: 'Ascension Day', countries: ['NL'], quarterId: 'q1-2025' },
-      { id: 'h7', dateISO: '2025-06-09', name: 'Whit Monday', countries: ['NL'], quarterId: 'q1-2025' },
-      { id: 'h8', dateISO: '2025-12-25', name: 'Christmas Day', countries: ['NL'], quarterId: 'q1-2025' },
-      { id: 'h9', dateISO: '2025-12-26', name: 'Boxing Day', countries: ['NL'], quarterId: 'q1-2025' },
+      { id: 'h1', dateISO: '2025-01-01', name: 'New Year\'s Day', countryCodes: ['NL'] },
+      { id: 'h2', dateISO: '2025-04-18', name: 'Good Friday', countryCodes: ['NL'] },
+      { id: 'h3', dateISO: '2025-04-21', name: 'Easter Monday', countryCodes: ['NL'] },
+      { id: 'h4', dateISO: '2025-04-27', name: 'King\'s Day', countryCodes: ['NL'] },
+      { id: 'h5', dateISO: '2025-05-05', name: 'Liberation Day', countryCodes: ['NL'] },
+      { id: 'h6', dateISO: '2025-05-29', name: 'Ascension Day', countryCodes: ['NL'] },
+      { id: 'h7', dateISO: '2025-06-09', name: 'Whit Monday', countryCodes: ['NL'] },
+      { id: 'h8', dateISO: '2025-12-25', name: 'Christmas Day', countryCodes: ['NL'] },
+      { id: 'h9', dateISO: '2025-12-26', name: 'Boxing Day', countryCodes: ['NL'] },
 
       // United Kingdom 2025
-      { id: 'h10', dateISO: '2025-01-01', name: 'New Year\'s Day', countries: ['GB'], quarterId: 'q1-2025' },
-      { id: 'h11', dateISO: '2025-04-18', name: 'Good Friday', countries: ['GB'], quarterId: 'q1-2025' },
-      { id: 'h12', dateISO: '2025-04-21', name: 'Easter Monday', countries: ['GB'], quarterId: 'q1-2025' },
-      { id: 'h13', dateISO: '2025-05-05', name: 'Early May Bank Holiday', countries: ['GB'], quarterId: 'q1-2025' },
-      { id: 'h14', dateISO: '2025-05-26', name: 'Spring Bank Holiday', countries: ['GB'], quarterId: 'q1-2025' },
-      { id: 'h15', dateISO: '2025-08-25', name: 'Summer Bank Holiday', countries: ['GB'], quarterId: 'q1-2025' },
-      { id: 'h16', dateISO: '2025-12-25', name: 'Christmas Day', countries: ['GB'], quarterId: 'q1-2025' },
-      { id: 'h17', dateISO: '2025-12-26', name: 'Boxing Day', countries: ['GB'], quarterId: 'q1-2025' },
+      { id: 'h10', dateISO: '2025-01-01', name: 'New Year\'s Day', countryCodes: ['GB'] },
+      { id: 'h11', dateISO: '2025-04-18', name: 'Good Friday', countryCodes: ['GB'] },
+      { id: 'h12', dateISO: '2025-04-21', name: 'Easter Monday', countryCodes: ['GB'] },
+      { id: 'h13', dateISO: '2025-05-05', name: 'Early May Bank Holiday', countryCodes: ['GB'] },
+      { id: 'h14', dateISO: '2025-05-26', name: 'Spring Bank Holiday', countryCodes: ['GB'] },
+      { id: 'h15', dateISO: '2025-08-25', name: 'Summer Bank Holiday', countryCodes: ['GB'] },
+      { id: 'h16', dateISO: '2025-12-25', name: 'Christmas Day', countryCodes: ['GB'] },
+      { id: 'h17', dateISO: '2025-12-26', name: 'Boxing Day', countryCodes: ['GB'] },
 
       // Spain 2025
-      { id: 'h18', dateISO: '2025-01-01', name: 'New Year\'s Day', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h19', dateISO: '2025-01-06', name: 'Epiphany', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h20', dateISO: '2025-04-18', name: 'Good Friday', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h21', dateISO: '2025-05-01', name: 'Labour Day', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h22', dateISO: '2025-08-15', name: 'Assumption Day', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h23', dateISO: '2025-10-12', name: 'National Day', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h24', dateISO: '2025-11-01', name: 'All Saints\' Day', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h25', dateISO: '2025-12-06', name: 'Constitution Day', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h26', dateISO: '2025-12-08', name: 'Immaculate Conception', countries: ['ES'], quarterId: 'q1-2025' },
-      { id: 'h27', dateISO: '2025-12-25', name: 'Christmas Day', countries: ['ES'], quarterId: 'q1-2025' }
+      { id: 'h18', dateISO: '2025-01-01', name: 'New Year\'s Day', countryCodes: ['ES'] },
+      { id: 'h19', dateISO: '2025-01-06', name: 'Epiphany', countryCodes: ['ES'] },
+      { id: 'h20', dateISO: '2025-04-18', name: 'Good Friday', countryCodes: ['ES'] },
+      { id: 'h21', dateISO: '2025-05-01', name: 'Labour Day', countryCodes: ['ES'] },
+      { id: 'h22', dateISO: '2025-08-15', name: 'Assumption Day', countryCodes: ['ES'] },
+      { id: 'h23', dateISO: '2025-10-12', name: 'National Day', countryCodes: ['ES'] },
+      { id: 'h24', dateISO: '2025-11-01', name: 'All Saints\' Day', countryCodes: ['ES'] },
+      { id: 'h25', dateISO: '2025-12-06', name: 'Constitution Day', countryCodes: ['ES'] },
+      { id: 'h26', dateISO: '2025-12-08', name: 'Immaculate Conception', countryCodes: ['ES'] },
+      { id: 'h27', dateISO: '2025-12-25', name: 'Christmas Day', countryCodes: ['ES'] }
     ],
     settings: {
       certaintyMultipliers: {
@@ -589,11 +564,6 @@ const TestDataLoader = () => {
         Mid: 1.2,
         High: 1.0
       },
-      countries: [
-        { code: 'NL', name: 'Netherlands' },
-        { code: 'GB', name: 'United Kingdom' },
-        { code: 'ES', name: 'Spain' }
-      ],
       strictAppMatching: true
     }
   }
@@ -659,8 +629,14 @@ const TestDataLoader = () => {
       for (const member of testData.teamMembers) {
         const existingMember = team.find(m => m.name === member.name)
         if (!existingMember) {
-          console.log('Adding team member:', member.name, 'with quarterId:', member.quarterId)
-          const success = await addTeamMember(member)
+          console.log('Adding team member:', member.name, 'with original quarterId:', member.quarterId)
+          console.log('Current quarter ID in store:', currentState.currentQuarterId)
+          
+          // Remove the hardcoded quarterId from the member data
+          const { quarterId, ...memberWithoutQuarterId } = member
+          console.log('Member data without quarterId:', memberWithoutQuarterId)
+          
+          const success = await addTeamMember(memberWithoutQuarterId)
           console.log('Team member added successfully:', success)
           if (success) addedCount++
         } else {
