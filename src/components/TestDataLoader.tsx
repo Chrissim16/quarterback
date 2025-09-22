@@ -603,27 +603,39 @@ const TestDataLoader = () => {
     setMessage(null)
 
     try {
+      console.log('🚀 Starting test data loading...')
+      console.log('Current quarters before loading:', quarters.length)
+      console.log('Current team members before loading:', team.length)
+      console.log('Current items before loading:', items.length)
+      
       // Check if quarter already exists, if not add it
       const existingQuarter = quarters.find(q => q.name === testData.quarter.name)
       if (!existingQuarter) {
-        await addQuarter(testData.quarter)
+        console.log('Creating new quarter:', testData.quarter.name)
+        const quarterResult = await addQuarter(testData.quarter)
+        console.log('Quarter creation result:', quarterResult)
+        
+        if (!quarterResult) {
+          throw new Error('Failed to create quarter')
+        }
+        
         // Set the new quarter as current
+        console.log('Setting current quarter to:', testData.quarter.id)
         setCurrentQuarter(testData.quarter.id)
       } else {
         // If quarter exists, set it as current
+        console.log('Using existing quarter:', existingQuarter.id)
         setCurrentQuarter(existingQuarter.id)
       }
       
       // Small delay to ensure state is updated
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 200))
       
       // Debug: Check current state
-      console.log('Current quarter ID after setting:', testData.quarter.id)
-      console.log('Available quarters:', quarters.map(q => ({ id: q.id, name: q.name })))
-      
-      // Check if currentQuarterId is actually set in the store
-      console.log('Store currentQuarterId:', useAppStore.getState().currentQuarterId)
-      console.log('Store quarters:', useAppStore.getState().quarters.map(q => ({ id: q.id, name: q.name })))
+      const currentState = useAppStore.getState()
+      console.log('Current quarter ID after setting:', currentState.currentQuarterId)
+      console.log('Available quarters:', currentState.quarters.map(q => ({ id: q.id, name: q.name })))
+      console.log('Current quarter object:', currentState.getCurrentQuarter())
 
       // Add features (check for duplicates)
       for (const feature of testData.features) {
@@ -643,21 +655,25 @@ const TestDataLoader = () => {
 
       // Add team members (check for duplicates)
       console.log('Adding team members...')
+      let addedCount = 0
       for (const member of testData.teamMembers) {
         const existingMember = team.find(m => m.name === member.name)
         if (!existingMember) {
           console.log('Adding team member:', member.name, 'with quarterId:', member.quarterId)
           const success = await addTeamMember(member)
           console.log('Team member added successfully:', success)
+          if (success) addedCount++
         } else {
           console.log('Team member already exists:', member.name)
         }
       }
       
       // Debug: Check team state after adding
-      console.log('Team members in store after adding:', team.length)
-      console.log('Current quarter ID:', testData.quarter.id)
-      console.log('Team members for current quarter:', team.filter(m => m.quarterId === testData.quarter.id).length)
+      const finalState = useAppStore.getState()
+      console.log('Team members in store after adding:', finalState.team.length)
+      console.log('Current quarter ID:', finalState.currentQuarterId)
+      console.log('Team members for current quarter:', finalState.team.filter(m => m.quarterId === finalState.currentQuarterId).length)
+      console.log('Successfully added team members:', addedCount)
 
       // Add holidays (check for duplicates)
       for (const holiday of testData.holidays) {
@@ -672,10 +688,13 @@ const TestDataLoader = () => {
 
       // Sync to Supabase
       console.log('Starting sync to Supabase...')
-      console.log('Current quarter ID:', testData.quarter.id)
-      console.log('Team members to sync:', testData.teamMembers.length)
-      console.log('Features to sync:', testData.features.length)
-      console.log('Stories to sync:', testData.stories.length)
+      const preSyncState = useAppStore.getState()
+      console.log('Pre-sync state:')
+      console.log('- Quarters:', preSyncState.quarters.length)
+      console.log('- Items:', preSyncState.items.length)
+      console.log('- Team members:', preSyncState.team.length)
+      console.log('- Holidays:', preSyncState.holidays.length)
+      console.log('- Current quarter ID:', preSyncState.currentQuarterId)
       
       const syncResult = await syncToSupabase()
       console.log('Sync result:', syncResult)
