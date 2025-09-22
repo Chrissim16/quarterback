@@ -12,7 +12,6 @@ const TestDataLoader = () => {
     addTeamMember, 
     addHoliday, 
     updateSettings,
-    syncToSupabase,
     setCurrentQuarter
   } = useAppStore()
   
@@ -662,30 +661,20 @@ const TestDataLoader = () => {
       // Update settings
       await updateSettings(testData.settings)
 
-      // Sync to Supabase
-      console.log('Starting sync to Supabase...')
-      const preSyncState = useAppStore.getState()
-      console.log('Pre-sync state:')
-      console.log('- Quarters:', preSyncState.quarters.length)
-      console.log('- Items:', preSyncState.items.length)
-      console.log('- Team members:', preSyncState.team.length)
-      console.log('- Holidays:', preSyncState.holidays.length)
-      console.log('- Current quarter ID:', preSyncState.currentQuarterId)
+      // Check final state after all operations
+      const finalState = useAppStore.getState()
+      console.log('Final state after loading:')
+      console.log('- Quarters:', finalState.quarters.length)
+      console.log('- Items:', finalState.items.length)
+      console.log('- Team members:', finalState.team.length)
+      console.log('- Holidays:', finalState.holidays.length)
+      console.log('- Current quarter ID:', finalState.currentQuarterId)
       
-      const syncResult = await syncToSupabase()
-      console.log('Sync result:', syncResult)
-      
-      if (syncResult.success) {
-        setMessage({
-          type: 'success',
-          text: `Test data loaded successfully! ${testData.features.length} features, ${testData.stories.length} stories, ${testData.teamMembers.length} team members, ${testData.holidays.length} holidays. Synced to Supabase.`
-        })
-      } else {
-        setMessage({
-          type: 'error',
-          text: `Test data loaded but sync failed: ${syncResult.message}`
-        })
-      }
+      // All data should already be saved to Supabase by individual functions
+      setMessage({
+        type: 'success',
+        text: `Test data loaded successfully! ${testData.features.length} features, ${testData.stories.length} stories, ${testData.teamMembers.length} team members, ${testData.holidays.length} holidays. All data saved to Supabase.`
+      })
     } catch (error) {
       console.error('Test data loading failed:', error)
       setMessage({
