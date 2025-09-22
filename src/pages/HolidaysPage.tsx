@@ -10,7 +10,7 @@ const HolidaysPage = () => {
   const [newHoliday, setNewHoliday] = useState<Partial<Holiday>>({
     dateISO: '',
     name: '',
-    countries: [],
+    countryCodes: [],
   })
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false)
 
@@ -19,12 +19,12 @@ const HolidaysPage = () => {
       addHoliday({
         dateISO: newHoliday.dateISO,
         name: newHoliday.name.trim(),
-        countries: newHoliday.countries || [],
+        countryCodes: newHoliday.countryCodes || [],
       })
       setNewHoliday({
         dateISO: '',
         name: '',
-        countries: [],
+        countryCodes: [],
       })
       setIsAddingHoliday(false)
     }
@@ -41,11 +41,11 @@ const HolidaysPage = () => {
   }
 
   const toggleCountry = (countryCode: ISO2) => {
-    const currentCountries = newHoliday.countries || []
+    const currentCountries = newHoliday.countryCodes || []
     const updatedCountries = currentCountries.includes(countryCode)
       ? currentCountries.filter(code => code !== countryCode)
       : [...currentCountries, countryCode]
-    setNewHoliday({ ...newHoliday, countries: updatedCountries })
+    setNewHoliday({ ...newHoliday, countryCodes: updatedCountries })
   }
 
   const isDateInQuarter = (dateISO: string) => {
@@ -141,9 +141,9 @@ const HolidaysPage = () => {
                 onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
                 className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {newHoliday.countries?.length === 0 
+                {newHoliday.countryCodes?.length === 0 
                   ? 'Global holiday (all countries)'
-                  : `${newHoliday.countries?.length} countries selected`
+                  : `${newHoliday.countryCodes?.length} countries selected`
                 }
               </button>
               
@@ -156,7 +156,7 @@ const HolidaysPage = () => {
                     >
                       <input
                         type="checkbox"
-                        checked={newHoliday.countries?.includes(country.code) || false}
+                        checked={newHoliday.countryCodes?.includes(country.code) || false}
                         onChange={() => toggleCountry(country.code)}
                         className="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
@@ -170,9 +170,9 @@ const HolidaysPage = () => {
             </div>
 
             {/* Selected Countries Display */}
-            {newHoliday.countries && newHoliday.countries.length > 0 && (
+            {newHoliday.countryCodes && newHoliday.countryCodes.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
-                {newHoliday.countries.map((countryCode) => (
+                {newHoliday.countryCodes.map((countryCode) => (
                   <span
                     key={countryCode}
                     className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -262,13 +262,13 @@ const HolidaysPage = () => {
                           )}
                         </div>
                         <div className="mt-2">
-                          {holiday.countries.length === 0 ? (
+                          {holiday.countryCodes.length === 0 ? (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                               Global Holiday
                             </span>
                           ) : (
                             <div className="flex flex-wrap gap-1">
-                              {holiday.countries.map((countryCode) => (
+                              {holiday.countryCodes.map((countryCode) => (
                                 <span
                                   key={countryCode}
                                   className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
