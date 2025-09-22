@@ -61,8 +61,8 @@ const HolidaysPage = () => {
     const start = new Date(quarter.startISO)
     const end = new Date(quarter.endISO)
     return {
-      start: start.toLocaleDateString(),
-      end: end.toLocaleDateString(),
+      start: start.toLocaleDateString('en-GB'),
+      end: end.toLocaleDateString('en-GB'),
     }
   }
 
@@ -253,7 +253,7 @@ const HolidaysPage = () => {
                             className="text-lg font-medium text-gray-900 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1"
                           />
                           <span className="text-sm text-gray-500">
-                            {new Date(holiday.dateISO).toLocaleDateString()}
+                            {new Date(holiday.dateISO).toLocaleDateString('en-GB')}
                           </span>
                           {!isDateInQuarter(holiday.dateISO) && (
                             <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded">

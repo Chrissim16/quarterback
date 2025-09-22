@@ -569,7 +569,7 @@ const TeamPage = () => {
                 </span>
               ) : (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  ✓ Up to date · {new Date(assignmentOverview.generatedAtISO).toLocaleDateString()}
+                  ✓ Up to date · {new Date(assignmentOverview.generatedAtISO).toLocaleDateString('en-GB')}
                 </span>
               )}
             </div>

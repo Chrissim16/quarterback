@@ -251,7 +251,7 @@ const GeneralSettings = () => {
             <div>
               <div className="text-sm font-medium text-gray-700">Date Range</div>
               <div className="text-lg text-gray-900">
-                {new Date(currentQuarter.startISO).toLocaleDateString()} - {new Date(currentQuarter.endISO).toLocaleDateString()}
+                {new Date(currentQuarter.startISO).toLocaleDateString('en-GB')} - {new Date(currentQuarter.endISO).toLocaleDateString('en-GB')}
               </div>
             </div>
             <div>
@@ -376,7 +376,7 @@ const GeneralSettings = () => {
           <div className="flex items-center justify-between">
             <div className="text-sm text-blue-800">
               {hasCompletedMigration() ? (
-                <span>✅ Migration completed on {getMigrationDate() ? new Date(getMigrationDate()!).toLocaleDateString() : 'unknown date'}</span>
+                <span>✅ Migration completed on {getMigrationDate() ? new Date(getMigrationDate()!).toLocaleDateString('en-GB') : 'unknown date'}</span>
               ) : (
                 <span>Ready to migrate {items.length} items, {team.length} team members, {holidays.length} holidays, and {quarters.length} quarters</span>
               )}

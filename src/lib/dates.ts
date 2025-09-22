@@ -55,7 +55,7 @@ export const workingDaysBetween = (startISO: string, endISO: string): number => 
  */
 export const formatDate = (date: Date | string): string => {
   const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString('en-US', {
+  return d.toLocaleDateString('en-GB', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -70,12 +70,12 @@ export const formatDateRange = (startISO: string, endISO: string): string => {
   const start = new Date(startISO)
   const end = new Date(endISO)
   
-  const startFormatted = start.toLocaleDateString('en-US', {
+  const startFormatted = start.toLocaleDateString('en-GB', {
     month: 'short',
     day: 'numeric'
   })
   
-  const endFormatted = end.toLocaleDateString('en-US', {
+  const endFormatted = end.toLocaleDateString('en-GB', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'

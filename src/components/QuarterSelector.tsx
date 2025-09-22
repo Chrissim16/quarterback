@@ -86,7 +86,7 @@ const QuarterSelector: React.FC<QuarterSelectorProps> = ({ onQuarterSelected }) 
                             <p className="text-sm text-gray-500 mt-1">{quarter.description}</p>
                           )}
                           <p className="text-sm text-gray-500 mt-1">
-                            {new Date(quarter.startISO).toLocaleDateString()} - {new Date(quarter.endISO).toLocaleDateString()}
+                            {new Date(quarter.startISO).toLocaleDateString('en-GB')} - {new Date(quarter.endISO).toLocaleDateString('en-GB')}
                           </p>
                           {quarter.label && (
                             <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
