@@ -536,14 +536,14 @@ const TestDataLoader = () => {
       { id: 'h9', dateISO: '2025-12-26', name: 'Boxing Day', countryCodes: ['NL'] },
 
       // United Kingdom 2025
-      { id: 'h10', dateISO: '2025-01-01', name: 'New Year\'s Day', countryCodes: ['GB'] },
-      { id: 'h11', dateISO: '2025-04-18', name: 'Good Friday', countryCodes: ['GB'] },
-      { id: 'h12', dateISO: '2025-04-21', name: 'Easter Monday', countryCodes: ['GB'] },
-      { id: 'h13', dateISO: '2025-05-05', name: 'Early May Bank Holiday', countryCodes: ['GB'] },
-      { id: 'h14', dateISO: '2025-05-26', name: 'Spring Bank Holiday', countryCodes: ['GB'] },
-      { id: 'h15', dateISO: '2025-08-25', name: 'Summer Bank Holiday', countryCodes: ['GB'] },
-      { id: 'h16', dateISO: '2025-12-25', name: 'Christmas Day', countryCodes: ['GB'] },
-      { id: 'h17', dateISO: '2025-12-26', name: 'Boxing Day', countryCodes: ['GB'] },
+      { id: 'h10', dateISO: '2025-01-01', name: 'New Year\'s Day', countryCodes: ['UK'] },
+      { id: 'h11', dateISO: '2025-04-18', name: 'Good Friday', countryCodes: ['UK'] },
+      { id: 'h12', dateISO: '2025-04-21', name: 'Easter Monday', countryCodes: ['UK'] },
+      { id: 'h13', dateISO: '2025-05-05', name: 'Early May Bank Holiday', countryCodes: ['UK'] },
+      { id: 'h14', dateISO: '2025-05-26', name: 'Spring Bank Holiday', countryCodes: ['UK'] },
+      { id: 'h15', dateISO: '2025-08-25', name: 'Summer Bank Holiday', countryCodes: ['UK'] },
+      { id: 'h16', dateISO: '2025-12-25', name: 'Christmas Day', countryCodes: ['UK'] },
+      { id: 'h17', dateISO: '2025-12-26', name: 'Boxing Day', countryCodes: ['UK'] },
 
       // Spain 2025
       { id: 'h18', dateISO: '2025-01-01', name: 'New Year\'s Day', countryCodes: ['ES'] },
