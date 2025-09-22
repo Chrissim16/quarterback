@@ -277,6 +277,37 @@ export interface Database {
           updated_at?: string
         }
       }
+      countries: {
+        Row: {
+          code: string
+          name: string
+          region: string | null
+          timezone: string | null
+          currency: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          name: string
+          region?: string | null
+          timezone?: string | null
+          currency?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          name?: string
+          region?: string | null
+          timezone?: string | null
+          currency?: string | null
+          is_active?: boolean
+          updated_at?: string
+        }
+      }
       proposals: {
         Row: {
           id: string
