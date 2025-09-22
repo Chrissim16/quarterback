@@ -78,7 +78,8 @@ export class SupabaseService {
       .insert({
         ...quarter,
         user_id: this.userId,
-        id: crypto.randomUUID(),
+        // Use the provided ID if it exists, otherwise generate a new one
+        id: quarter.id || crypto.randomUUID(),
       })
       .select()
       .single()
@@ -139,7 +140,7 @@ export class SupabaseService {
       .insert({
         ...item,
         user_id: this.userId,
-        id: crypto.randomUUID(),
+        id: item.id || crypto.randomUUID(),
       })
       .select()
       .single()
@@ -200,7 +201,7 @@ export class SupabaseService {
       .insert({
         ...member,
         user_id: this.userId,
-        id: crypto.randomUUID(),
+        id: member.id || crypto.randomUUID(),
       })
       .select()
       .single()
@@ -261,7 +262,7 @@ export class SupabaseService {
       .insert({
         ...holiday,
         user_id: this.userId,
-        id: crypto.randomUUID(),
+        id: holiday.id || crypto.randomUUID(),
       })
       .select()
       .single()
@@ -356,7 +357,7 @@ export class SupabaseService {
       .insert({
         ...proposal,
         user_id: this.userId,
-        id: crypto.randomUUID(),
+        id: proposal.id || crypto.randomUUID(),
       })
       .select()
       .single()
