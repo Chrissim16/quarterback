@@ -607,20 +607,30 @@ const TestDataLoader = () => {
       console.log('Current quarter object:', currentState.getCurrentQuarter())
 
       // Add features (check for duplicates)
+      console.log('Adding features...')
+      let featuresAdded = 0
       for (const feature of testData.features) {
         const existingFeature = items.find(item => item.key === feature.key)
         if (!existingFeature) {
-          await addPlanItem(feature)
+          const success = await addPlanItem(feature)
+          if (success) featuresAdded++
+          console.log(`Feature ${feature.key}: ${success ? 'added' : 'failed'}`)
         }
       }
+      console.log(`Features added: ${featuresAdded}/${testData.features.length}`)
 
       // Add stories (check for duplicates)
+      console.log('Adding stories...')
+      let storiesAdded = 0
       for (const story of testData.stories) {
         const existingStory = items.find(item => item.key === story.key)
         if (!existingStory) {
-          await addPlanItem(story)
+          const success = await addPlanItem(story)
+          if (success) storiesAdded++
+          console.log(`Story ${story.key}: ${success ? 'added' : 'failed'}`)
         }
       }
+      console.log(`Stories added: ${storiesAdded}/${testData.stories.length}`)
 
       // Add team members (check for duplicates)
       console.log('Adding team members...')
@@ -651,12 +661,17 @@ const TestDataLoader = () => {
       console.log('Successfully added team members:', addedCount)
 
       // Add holidays (check for duplicates)
+      console.log('Adding holidays...')
+      let holidaysAdded = 0
       for (const holiday of testData.holidays) {
         const existingHoliday = holidays.find(h => h.name === holiday.name && h.dateISO === holiday.dateISO)
         if (!existingHoliday) {
-          await addHoliday(holiday)
+          const success = await addHoliday(holiday)
+          if (success) holidaysAdded++
+          console.log(`Holiday ${holiday.name}: ${success ? 'added' : 'failed'}`)
         }
       }
+      console.log(`Holidays added: ${holidaysAdded}/${testData.holidays.length}`)
 
       // Update settings
       await updateSettings(testData.settings)
@@ -669,6 +684,24 @@ const TestDataLoader = () => {
       console.log('- Team members:', postLoadState.team.length)
       console.log('- Holidays:', postLoadState.holidays.length)
       console.log('- Current quarter ID:', postLoadState.currentQuarterId)
+      
+      // Verify data in Supabase
+      console.log('Verifying data in Supabase...')
+      try {
+        const { supabaseDataService } = await import('../lib/supabaseDataService')
+        const supabaseData = await supabaseDataService.loadAllData()
+        if (supabaseData) {
+          console.log('Supabase data verification:')
+          console.log('- Quarters in DB:', supabaseData.quarters.length)
+          console.log('- Items in DB:', supabaseData.items.length)
+          console.log('- Team members in DB:', supabaseData.team.length)
+          console.log('- Holidays in DB:', supabaseData.holidays.length)
+        } else {
+          console.log('Failed to load data from Supabase for verification')
+        }
+      } catch (error) {
+        console.error('Error verifying Supabase data:', error)
+      }
       
       // All data should already be saved to Supabase by individual functions
       setMessage({
