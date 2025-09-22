@@ -96,37 +96,55 @@ const TeamPage = () => {
     return filtered
   }, [assignmentOverview, assignmentFilter])
 
-  const handleAddMember = () => {
+  const handleAddMember = async () => {
     if (newMember.name?.trim()) {
-      addTeamMember({
+      console.log('Adding team member:', newMember.name.trim())
+      const success = await addTeamMember({
         name: newMember.name.trim(),
         country: newMember.country,
         application: newMember.application || undefined,
         allocationPct: newMember.allocationPct || 100,
         ptoDays: newMember.ptoDays || 0,
       })
-      setNewMember({
-        name: '',
-        country: undefined,
-        application: '',
-        allocationPct: 100,
-        ptoDays: 0,
-      })
-      setIsAddingMember(false)
+      
+      if (success) {
+        console.log('Team member added successfully')
+        setNewMember({
+          name: '',
+          country: undefined,
+          application: '',
+          allocationPct: 100,
+          ptoDays: 0,
+        })
+        setIsAddingMember(false)
+      } else {
+        console.error('Failed to add team member')
+        alert('Failed to add team member. Please check the console for details.')
+      }
     }
   }
 
-  const handleFieldChange = (id: string, field: keyof TeamMember, value: any) => {
-    updateTeamMember(id, { [field]: value })
+  const handleFieldChange = async (id: string, field: keyof TeamMember, value: any) => {
+    console.log('Updating team member field:', field, 'to', value)
+    const success = await updateTeamMember(id, { [field]: value })
+    if (!success) {
+      console.error('Failed to update team member')
+      alert('Failed to update team member. Please check the console for details.')
+    }
   }
 
-  const handleDeleteMember = (id: string) => {
+  const handleDeleteMember = async (id: string) => {
     if (confirm('Are you sure you want to delete this team member?')) {
-      removeTeamMember(id)
+      console.log('Deleting team member:', id)
+      const success = await removeTeamMember(id)
+      if (!success) {
+        console.error('Failed to delete team member')
+        alert('Failed to delete team member. Please check the console for details.')
+      }
     }
   }
 
-  const handleLoadSampleData = () => {
+  const handleLoadSampleData = async () => {
     if (confirm('This will add sample team members. Continue?')) {
       // Add sample team members for testing capacity calculation
       const sampleMembers = [
@@ -153,7 +171,13 @@ const TeamPage = () => {
         },
       ]
       
-      sampleMembers.forEach(member => addTeamMember(member))
+      console.log('Loading sample team members...')
+      let successCount = 0
+      for (const member of sampleMembers) {
+        const success = await addTeamMember(member)
+        if (success) successCount++
+      }
+      console.log(`Sample data loading complete: ${successCount}/${sampleMembers.length} members added successfully`)
     }
   }
 
