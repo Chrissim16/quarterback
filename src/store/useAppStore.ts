@@ -81,7 +81,6 @@ interface AppActions {
   addCountry: (country: Omit<Country, 'id'>) => void
   updateCountry: (code: ISO2, updates: Partial<Country>) => void
   removeCountry: (code: ISO2) => void
-  debugCountries: () => Country[]
 
   // Proposal actions
   setProposal: (proposal: { generatedAtISO: string; items: ProposalItem[] }) => void
@@ -472,15 +471,6 @@ export const useAppStore = create<AppState & AppActions>()(
       }
     },
 
-    // Debug function to check countries
-    debugCountries: () => {
-      const state = get()
-      console.log('🔍 Countries Debug:')
-      console.log('- Countries in store:', state.countries.length)
-      console.log('- Sample countries:', state.countries.slice(0, 3))
-      console.log('- Full countries array:', state.countries)
-      return state.countries
-    },
 
     updateCountry: async (code: ISO2, updates: Partial<Country>) => {
       try {
@@ -591,8 +581,6 @@ const initializeApp = async () => {
     const supabaseData = await supabaseDataService.loadAllData()
     if (supabaseData) {
       console.log('Loaded data from Supabase')
-      console.log('Countries loaded from Supabase:', supabaseData.countries?.length || 0)
-      console.log('Sample countries:', supabaseData.countries?.slice(0, 3))
       useAppStore.setState(supabaseData)
       return
     }
@@ -601,8 +589,6 @@ const initializeApp = async () => {
     const savedState = load<AppState>(STORAGE_KEY, initialState)
     if (savedState) {
       console.log('Loaded data from localStorage cache')
-      console.log('Countries in localStorage:', savedState.countries?.length || 0)
-      console.log('Sample countries from localStorage:', savedState.countries?.slice(0, 3))
       
       // Check if migration is needed
       if (needsMigration(savedState)) {
@@ -630,7 +616,6 @@ const initializeApp = async () => {
       }
     } else {
       console.log('No saved data found, using initial state')
-      console.log('Countries in initial state:', initialState.countries?.length || 0)
       useAppStore.setState(initialState)
     }
   } catch (error) {

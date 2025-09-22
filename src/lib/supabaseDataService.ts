@@ -47,43 +47,22 @@ export class SupabaseDataService {
       const initialized = await this.initialize()
       if (!initialized) return null
 
-      console.log('Supabase client available:', !!supabase)
-      console.log('About to query countries table...')
-
       const [quartersResult, itemsResult, teamResult, holidaysResult, countriesResult, settingsResult] = await Promise.all([
         supabase.from('quarters').select('*').order('start_iso'),
         supabase.from('plan_items').select('*').order('created_at'),
         supabase.from('team_members').select('*').order('name'),
         supabase.from('holidays').select('*').order('date_iso'),
-        supabase.from('countries').select('*').order('name').limit(1000),
+        supabase.from('countries').select('*').eq('is_active', true).order('name'),
         supabase.from('settings').select('*').single()
       ])
 
       // Check for errors
-      if (quartersResult.error) {
-        console.error('Quarters query error:', quartersResult.error)
-        throw quartersResult.error
-      }
-      if (itemsResult.error) {
-        console.error('Items query error:', itemsResult.error)
-        throw itemsResult.error
-      }
-      if (teamResult.error) {
-        console.error('Team query error:', teamResult.error)
-        throw teamResult.error
-      }
-      if (holidaysResult.error) {
-        console.error('Holidays query error:', holidaysResult.error)
-        throw holidaysResult.error
-      }
-      if (countriesResult.error) {
-        console.error('Countries query error:', countriesResult.error)
-        throw countriesResult.error
-      }
-      if (settingsResult.error && settingsResult.error.code !== 'PGRST116') {
-        console.error('Settings query error:', settingsResult.error)
-        throw settingsResult.error
-      }
+      if (quartersResult.error) throw quartersResult.error
+      if (itemsResult.error) throw itemsResult.error
+      if (teamResult.error) throw teamResult.error
+      if (holidaysResult.error) throw holidaysResult.error
+      if (countriesResult.error) throw countriesResult.error
+      if (settingsResult.error && settingsResult.error.code !== 'PGRST116') throw settingsResult.error
 
       // Transform data to match our types
       const quarters: QuarterWithId[] = (quartersResult.data || []).map(q => ({
@@ -135,12 +114,6 @@ export class SupabaseDataService {
         countryCodes: holiday.country_codes || []
       }))
 
-      console.log('Raw countries result:', countriesResult)
-      console.log('Countries data:', countriesResult.data)
-      console.log('Countries data length:', countriesResult.data?.length || 0)
-      console.log('Countries error:', countriesResult.error)
-      console.log('Countries status:', countriesResult.status)
-      
       const countries: Country[] = (countriesResult.data || []).map(country => ({
         code: country.code,
         name: country.name,
@@ -149,9 +122,6 @@ export class SupabaseDataService {
         currency: country.currency || undefined,
         isActive: country.is_active ?? true
       }))
-      
-      console.log('Countries loaded from database:', countries.length)
-      console.log('Sample countries from database:', countries.slice(0, 3))
 
       // Default settings if none exist
       const settings: Settings = settingsResult.data ? {
@@ -178,8 +148,6 @@ export class SupabaseDataService {
         proposals: []
       }
 
-      console.log('Final app state countries:', appState.countries.length)
-      console.log('Sample final countries:', appState.countries.slice(0, 3))
 
       // Cache in localStorage
       this.cacheToLocalStorage(appState)
