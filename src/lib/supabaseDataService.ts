@@ -47,11 +47,12 @@ export class SupabaseDataService {
       const initialized = await this.initialize()
       if (!initialized) return null
 
-      const [quartersResult, itemsResult, teamResult, holidaysResult, settingsResult] = await Promise.all([
+      const [quartersResult, itemsResult, teamResult, holidaysResult, countriesResult, settingsResult] = await Promise.all([
         supabase.from('quarters').select('*').order('start_iso'),
         supabase.from('plan_items').select('*').order('created_at'),
         supabase.from('team_members').select('*').order('name'),
         supabase.from('holidays').select('*').order('date_iso'),
+        supabase.from('countries').select('*').eq('is_active', true).order('name'),
         supabase.from('settings').select('*').single()
       ])
 
@@ -60,6 +61,7 @@ export class SupabaseDataService {
       if (itemsResult.error) throw itemsResult.error
       if (teamResult.error) throw teamResult.error
       if (holidaysResult.error) throw holidaysResult.error
+      if (countriesResult.error) throw countriesResult.error
       if (settingsResult.error && settingsResult.error.code !== 'PGRST116') throw settingsResult.error
 
       // Transform data to match our types
@@ -109,7 +111,16 @@ export class SupabaseDataService {
         quarterId: holiday.quarter_id,
         dateISO: holiday.date_iso,
         name: holiday.name,
-        countries: holiday.countries || []
+        countryCodes: holiday.country_codes || []
+      }))
+
+      const countries: Country[] = (countriesResult.data || []).map(country => ({
+        code: country.code,
+        name: country.name,
+        region: country.region || undefined,
+        timezone: country.timezone || undefined,
+        currency: country.currency || undefined,
+        isActive: country.is_active ?? true
       }))
 
       // Default settings if none exist
@@ -133,6 +144,7 @@ export class SupabaseDataService {
         items,
         team,
         holidays,
+        countries,
         settings,
         selection: 'plan',
         proposals: []
@@ -174,6 +186,11 @@ export class SupabaseDataService {
       // Save holidays
       for (const holiday of appState.holidays) {
         await this.upsertHoliday(holiday)
+      }
+
+      // Save countries
+      for (const country of appState.countries) {
+        await this.upsertCountry(country)
       }
 
       // Save settings
@@ -682,6 +699,33 @@ export class SupabaseDataService {
 
     if (error) {
       console.error('Failed to upsert settings:', error)
+      throw error
+    }
+  }
+
+  private async upsertCountry(country: Country): Promise<void> {
+    if (!this.currentUserId) {
+      // Try to reinitialize if user ID is missing
+      const initialized = await this.initialize()
+      if (!initialized || !this.currentUserId) {
+        throw new Error('User not initialized and reinitialization failed')
+      }
+    }
+
+    const { error } = await supabase
+      .from('countries')
+      .upsert({
+        code: country.code,
+        name: country.name,
+        region: country.region || null,
+        timezone: country.timezone || null,
+        currency: country.currency || null,
+        is_active: country.isActive ?? true
+      })
+      .select()
+
+    if (error) {
+      console.error('Failed to upsert country:', error)
       throw error
     }
   }

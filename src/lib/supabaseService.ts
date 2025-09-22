@@ -366,6 +366,65 @@ export class SupabaseService {
     return data
   }
 
+  // Country operations
+  async getCountries(): Promise<any[]> {
+    if (!supabase || !this.userId) throw new Error('Supabase not initialized')
+    
+    const { data, error } = await supabase
+      .from('countries')
+      .select('*')
+      .eq('is_active', true)
+      .order('name')
+
+    if (error) {
+      console.error('Failed to get countries:', error)
+      return []
+    }
+    return data || []
+  }
+
+  async createCountry(country: any): Promise<any> {
+    if (!supabase || !this.userId) throw new Error('Supabase not initialized')
+    
+    const { data, error } = await supabase
+      .from('countries')
+      .insert({
+        ...country,
+        id: country.code, // Use code as primary key
+      })
+      .select()
+      .single()
+
+    if (error) throw new Error(`Failed to create country: ${error.message}`)
+    return data
+  }
+
+  async updateCountry(code: string, country: any): Promise<any> {
+    if (!supabase || !this.userId) throw new Error('Supabase not initialized')
+    
+    const { data, error } = await supabase
+      .from('countries')
+      .update(country)
+      .eq('code', code)
+      .select()
+      .single()
+
+    if (error) throw new Error(`Failed to update country: ${error.message}`)
+    return data
+  }
+
+  async deleteCountry(code: string): Promise<boolean> {
+    if (!supabase || !this.userId) throw new Error('Supabase not initialized')
+    
+    const { error } = await supabase
+      .from('countries')
+      .delete()
+      .eq('code', code)
+
+    if (error) throw new Error(`Failed to delete country: ${error.message}`)
+    return true
+  }
+
   // Migration helper
   async migrateLocalStorageToSupabase(appState: any): Promise<void> {
     if (!supabase || !this.userId) throw new Error('Supabase not initialized')

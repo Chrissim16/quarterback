@@ -4,8 +4,12 @@ import React from 'react'
 export type ISO2 = string // length 2, uppercase
 
 export interface Country {
-  code: ISO2 // e.g., 'NL'
+  code: ISO2 // e.g., 'NL' - ISO 3166-1 alpha-2
   name: string // e.g., 'Netherlands'
+  region?: string // e.g., 'Europe'
+  timezone?: string // e.g., 'Europe/Amsterdam'
+  currency?: string // e.g., 'EUR'
+  isActive?: boolean // Whether this country is available for selection
 }
 
 export interface PlanItem {
@@ -71,7 +75,7 @@ export interface Holiday {
   quarterId: string // Quarter this holiday belongs to
   dateISO: string
   name: string
-  countries: ISO2[] // can link multiple countries; empty = global
+  countryCodes: ISO2[] // Array of ISO country codes; empty = global
 }
 
 // Store state types
@@ -112,6 +116,7 @@ export interface AppState {
   team: TeamMember[]
   holidays: Holiday[]
   items: PlanItem[]
+  countries: Country[] // Reference data for countries
   settings: Settings
   selection: Selection
   proposal?: {
