@@ -8,7 +8,7 @@ import { hasValidApplication } from '../lib/apps'
 import type { TeamMember, ISO2 } from '../types'
 
 const TeamPage = () => {
-  const { getCurrentQuarterTeam, settings, countries, addTeamMember, updateTeamMember, removeTeamMember } = useAppStore()
+  const { getCurrentQuarterTeam, settings, countries, addTeamMember, updateTeamMember, removeTeamMember, debugCountries } = useAppStore()
   const team = getCurrentQuarterTeam()
   const capacity = useCapacity()
   const assignmentOverview = useAssignmentOverview()
@@ -215,6 +215,22 @@ const TeamPage = () => {
             <p className="text-gray-600 mt-1">
               Manage your team members and their allocations for the quarter.
             </p>
+            <p className="text-sm text-gray-500 mt-1">
+              Countries available: {countries.length} | Sample: {countries.slice(0, 3).map(c => c.code).join(', ')}
+            </p>
+            {countries.length === 0 && (
+              <p className="text-sm text-red-600 mt-1">
+                ⚠️ No countries loaded! Check console for debug info.
+              </p>
+            )}
+            {countries.length > 0 && (
+              <p className="text-sm text-green-600 mt-1">
+                ✅ Countries loaded successfully! You can now select countries when adding team members.
+              </p>
+            )}
+            <p className="text-xs text-gray-400 mt-1">
+              Debug: Click "Debug Countries" button to see detailed info in console
+            </p>
           </div>
           <div className="flex space-x-3">
             {team.length === 0 && (
@@ -230,6 +246,12 @@ const TeamPage = () => {
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Add Member
+            </button>
+            <button
+              onClick={() => debugCountries()}
+              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+            >
+              Debug Countries
             </button>
           </div>
         </div>
@@ -261,7 +283,7 @@ const TeamPage = () => {
                 onChange={(e) => setNewMember({ ...newMember, country: e.target.value as ISO2 || undefined })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select Country</option>
+                <option value="">Select Country ({countries.length} available)</option>
                 {countries.map((country) => (
                   <option key={country.code} value={country.code}>
                     {country.code} — {country.name}
@@ -415,6 +437,12 @@ const TeamPage = () => {
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             Add Team Member
+          </button>
+          <button
+            onClick={() => debugCountries()}
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors ml-2"
+          >
+            Debug Countries
           </button>
         </div>
       )}

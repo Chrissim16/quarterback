@@ -122,6 +122,9 @@ export class SupabaseDataService {
         currency: country.currency || undefined,
         isActive: country.is_active ?? true
       }))
+      
+      console.log('Countries loaded from database:', countries.length)
+      console.log('Sample countries from database:', countries.slice(0, 3))
 
       // Default settings if none exist
       const settings: Settings = settingsResult.data ? {
@@ -147,6 +150,9 @@ export class SupabaseDataService {
         selection: 'plan',
         proposals: []
       }
+
+      console.log('Final app state countries:', appState.countries.length)
+      console.log('Sample final countries:', appState.countries.slice(0, 3))
 
       // Cache in localStorage
       this.cacheToLocalStorage(appState)

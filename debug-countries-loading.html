@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countries Loading Debugger</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .loading { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Countries Loading Debugger</h1>
+        <p>This tool will help debug why countries aren't showing in the team member dropdown.</p>
+        
+        <div class="section">
+            <h3>Step 1: Check Environment Variables</h3>
+            <button onclick="checkEnvironment()">Check Environment Variables</button>
+            <div id="envResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 2: Test Supabase Connection</h3>
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="connectionResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 3: Check Countries Table</h3>
+            <button onclick="checkCountriesTable()">Check Countries Table</button>
+            <div id="countriesResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 4: Test Countries Loading</h3>
+            <button onclick="testCountriesLoading()">Test Countries Loading</button>
+            <div id="loadingResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 5: Check App State</h3>
+            <button onclick="checkAppState()">Check App State</button>
+            <div id="appStateResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 6: Fix Countries Loading</h3>
+            <button onclick="fixCountriesLoading()">Fix Countries Loading</button>
+            <div id="fixResult"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Supabase client
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2'
+        
+        let supabase = null;
+        let countries = [];
+        
+        // Initialize Supabase
+        async function initSupabase() {
+            const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || localStorage.getItem('supabase-url');
+            const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || localStorage.getItem('supabase-key');
+            
+            if (!supabaseUrl || !supabaseKey) {
+                throw new Error('Supabase URL or Key not found');
+            }
+            
+            supabase = createClient(supabaseUrl, supabaseKey);
+            return supabase;
+        }
+        
+        // Check environment variables
+        window.checkEnvironment = async function() {
+            const resultDiv = document.getElementById('envResult');
+            resultDiv.innerHTML = '<div class="loading">Checking environment variables...</div>';
+            
+            try {
+                const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || localStorage.getItem('supabase-url');
+                const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || localStorage.getItem('supabase-key');
+                
+                if (supabaseUrl && supabaseKey) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Environment Variables Found</h4>
+                            <p><strong>Supabase URL:</strong> ${supabaseUrl.substring(0, 30)}...</p>
+                            <p><strong>Supabase Key:</strong> ${supabaseKey.substring(0, 20)}...</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Environment Variables Missing</h4>
+                            <p>Please check your .env file or browser storage</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        };
+        
+        // Test Supabase connection
+        window.testConnection = async function() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = '<div class="loading">Testing Supabase connection...</div>';
+            
+            try {
+                await initSupabase();
+                
+                // Test with a simple query
+                const { data, error } = await supabase.from('countries').select('count').limit(1);
+                
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error">Connection failed: ${error.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = '<div class="success">✅ Supabase connection successful!</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Connection error: ${error.message}</div>`;
+            }
+        };
+        
+        // Check countries table
+        window.checkCountriesTable = async function() {
+            const resultDiv = document.getElementById('countriesResult');
+            resultDiv.innerHTML = '<div class="loading">Checking countries table...</div>';
+            
+            try {
+                await initSupabase();
+                
+                const { data, error } = await supabase
+                    .from('countries')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name')
+                    .limit(10);
+                
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error">Query failed: ${error.message}</div>`;
+                } else {
+                    countries = data || [];
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Countries Table Check</h4>
+                            <p><strong>Total countries found:</strong> ${countries.length}</p>
+                            <pre>${JSON.stringify(countries.slice(0, 5), null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        };
+        
+        // Test countries loading
+        window.testCountriesLoading = async function() {
+            const resultDiv = document.getElementById('loadingResult');
+            resultDiv.innerHTML = '<div class="loading">Testing countries loading...</div>';
+            
+            try {
+                await initSupabase();
+                
+                // Simulate the exact query from the app
+                const { data, error } = await supabase
+                    .from('countries')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name');
+                
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error">Loading failed: ${error.message}</div>`;
+                } else {
+                    const countries = data || [];
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Countries Loading Test</h4>
+                            <p><strong>Countries loaded:</strong> ${countries.length}</p>
+                            <p><strong>Sample countries:</strong></p>
+                            <ul>
+                                ${countries.slice(0, 5).map(c => `<li>${c.code} - ${c.name}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        };
+        
+        // Check app state
+        window.checkAppState = async function() {
+            const resultDiv = document.getElementById('appStateResult');
+            resultDiv.innerHTML = '<div class="loading">Checking app state...</div>';
+            
+            try {
+                // Check localStorage
+                const storedData = localStorage.getItem('quarterback-app-state');
+                if (storedData) {
+                    const appState = JSON.parse(storedData);
+                    const countriesCount = appState.countries ? appState.countries.length : 0;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ App State Check</h4>
+                            <p><strong>Countries in app state:</strong> ${countriesCount}</p>
+                            <p><strong>Settings countries:</strong> ${appState.settings?.countries ? appState.settings.countries.length : 0}</p>
+                            <pre>${JSON.stringify({
+                                countries: appState.countries?.slice(0, 3) || [],
+                                settings: appState.settings
+                            }, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="warning">No app state found in localStorage</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        };
+        
+        // Fix countries loading
+        window.fixCountriesLoading = async function() {
+            const resultDiv = document.getElementById('fixResult');
+            resultDiv.innerHTML = '<div class="loading">Fixing countries loading...</div>';
+            
+            try {
+                await initSupabase();
+                
+                // Load countries from database
+                const { data, error } = await supabase
+                    .from('countries')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name');
+                
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error">Failed to load countries: ${error.message}</div>`;
+                    return;
+                }
+                
+                const countries = data || [];
+                
+                // Update localStorage
+                const storedData = localStorage.getItem('quarterback-app-state');
+                if (storedData) {
+                    const appState = JSON.parse(storedData);
+                    appState.countries = countries;
+                    localStorage.setItem('quarterback-app-state', JSON.stringify(appState));
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Countries Loading Fixed</h4>
+                        <p><strong>Countries loaded:</strong> ${countries.length}</p>
+                        <p><strong>localStorage updated:</strong> Yes</p>
+                        <p><strong>Next step:</strong> Refresh the app to see the changes</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        };
+    </script>
+</body>
+</html>
